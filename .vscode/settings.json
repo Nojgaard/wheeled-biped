@@ -1,0 +1,10 @@
+{
+    "flake8.enabled": true,
+    "flake8.args": [
+        "--max-line-length=120",
+        "--ignore=E402,F841"
+    ],
+    "flake8.path": [
+        "flake8"
+    ],
+}
