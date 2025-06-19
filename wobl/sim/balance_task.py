@@ -1,5 +1,5 @@
 from dm_control.composer import Task
-from wb.sim.robot import Robot
+from wobl.sim.robot import Robot
 from dm_control.locomotion.arenas import Floor
 from dm_control.mujoco import Physics
 import numpy as np
