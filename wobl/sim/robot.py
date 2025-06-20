@@ -5,6 +5,10 @@ from dm_control import mjcf
 from scipy.spatial.transform import Rotation
 
 
+def quat_to_euler(quat):
+    return Rotation.from_quat(quat, scalar_first=True).as_euler("XYZ")
+
+
 class Robot(Entity):
     def __init__(self):
         self._model_path = "assets/robot.xml"
@@ -25,6 +29,10 @@ class Robot(Entity):
         quat = physics.bind(framequat_element).sensordata
         return Rotation.from_quat(quat, scalar_first=True).as_euler("XYZ")
 
+    @property
+    def observables(self) -> "RobotObservables":
+        return super().observables
+
 
 class RobotObservables(Observables):
     _entity: Robot
@@ -40,7 +48,7 @@ class RobotObservables(Observables):
         return observable.MJCFFeature("qvel", all_joints)
 
     @composer.observable
-    def attitude_velocity(self):
+    def gyro(self):
         return observable.MJCFFeature(
             "sensordata",
             self._entity.mjcf_model.sensor.gyro,
@@ -51,3 +59,19 @@ class RobotObservables(Observables):
         return observable.MJCFFeature(
             "sensordata", self._entity.mjcf_model.sensor.accelerometer
         )
+    
+    @composer.observable
+    def linear_velocity(self):
+        return observable.MJCFFeature(
+            "sensordata",
+            self._entity.mjcf_model.sensor.velocimeter,
+        )
+
+    def read_orientation(self, physics):
+        framequat_element = self._entity.mjcf_model.sensor.framequat
+        quat = physics.bind(framequat_element).sensordata
+        return quat_to_euler(quat)
+
+    @composer.observable
+    def orientation(self):
+        return observable.Generic(self.read_orientation)

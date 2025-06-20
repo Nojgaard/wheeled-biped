@@ -113,10 +113,16 @@
         <exclude body1="L_thigh" body2="L_leg" />
     </contact>
     <actuator>
-        <position name="R_hip" joint="R_hip" kp="32" kv="5" ctrlrange="-0.20 0.65" />
         <position name="L_hip" joint="L_hip" kp="32" kv="5" ctrlrange="-0.20 0.65" />
+        <position name="R_hip" joint="R_hip" kp="32" kv="5" ctrlrange="-0.20 0.65" />
 
-        <velocity name="R_foot" joint="R_foot" kv="1" ctrlrange="-8 8" />
-        <velocity name="L_foot" joint="L_foot" kv="1" ctrlrange="-8 8" />
+        <velocity name="L_foot" joint="L_foot" kv="2" ctrlrange="-10 10" />
+        <velocity name="R_foot" joint="R_foot" kv="2" ctrlrange="-10 10" />
     </actuator>
+    <sensor>
+        <framequat name="imu_quat" objtype="site" objname="imu" />
+        <gyro name="imu_gyro" site="imu" />
+        <accelerometer name="imu_acc" site="imu" />
+        <velocimeter name="imu_vel" site="imu" />
+    </sensor>
 </mujoco>

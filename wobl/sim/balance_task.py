@@ -11,7 +11,10 @@ class BalanceTask(Task):
         self.robot = Robot()
         self._arena = Floor(reflectance=0.0)
         self._arena.add_free_entity(self.robot)
-        self.set_timesteps(control_timestep=0.02, physics_timestep=0.005)
+        self.set_timesteps(control_timestep=0.01, physics_timestep=0.005)
+
+        self.robot.observables.orientation.enabled = True
+        self.robot.observables.linear_velocity.enabled = True
 
     def initialize_episode(self, physics: Physics, random_state):
         self.robot.set_pose(
