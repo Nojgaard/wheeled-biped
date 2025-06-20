@@ -3,16 +3,63 @@ from wobl.sim.balance_task import BalanceTask
 from wobl.sim.application import Application
 from dm_env import TimeStep, StepType
 import numpy as np
+import dearpygui.dearpygui as dpg
+import threading
+
+
+class Gui:
+    def __init__(self):
+        self._thread = threading.Thread(target=self._run, daemon=True)
+
+    def _run(self):
+        dpg.create_context()
+
+        with dpg.window(tag="primary_window"):
+            self._velocity = dpg.add_slider_float(
+                label="Target Velocity", min_value=-0.5, max_value=0.5, default_value=0
+            )
+            self._yaw_rate = dpg.add_slider_float(
+                label="Target Yaw Rate",
+                min_value=-2,
+                max_value=2,
+                default_value=0,
+            )
+
+        dpg.create_viewport(title="Control Dashboard", width=500, height=300)
+        dpg.setup_dearpygui()
+        dpg.show_viewport()
+        dpg.set_primary_window("primary_window", value=True)
+        dpg.start_dearpygui()
+        dpg.destroy_context()
+
+    @property
+    def velocity(self):
+        return dpg.get_value(self._velocity)
+    
+    @property
+    def yaw_rate(self):
+        return dpg.get_value(self._yaw_rate)
+    
+    def launch(self):
+        self._thread.start()
+
 
 def main():
     task = BalanceTask()
     controller = PidBalancer()
+    gui = Gui()
+    gui.launch()
+
     def policy(timestep: TimeStep):
         if timestep.step_type == StepType.FIRST:
-            controller.pitch_pid.reset()
+            controller._pitch_pid.reset()
         orientation = timestep.observation["robot/orientation"]
         linear_velocity = timestep.observation["robot/linear_velocity"]
-        lvel, rvel = controller.update(task.control_timestep, orientation, linear_velocity)
+        controller.target_velocity = gui.velocity
+        controller.target_yaw_rate = gui.yaw_rate
+        lvel, rvel = controller.update(
+            task.control_timestep, orientation, linear_velocity
+        )
 
         return np.array([0.0, 0.0, lvel, rvel])
 
