@@ -2,3 +2,4 @@ mujoco
 numpy
 simple-pid
 dearpygui
+dm_control
