@@ -23,7 +23,8 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-add_executable(hello_node src/main.cpp)
+include_directories(include)
+add_executable(hello_node src/main.cpp src/imu.cpp)
 target_link_libraries(hello_node ICM20948_Lib)
 install(TARGETS hello_node DESTINATION lib/${PROJECT_NAME})
 
