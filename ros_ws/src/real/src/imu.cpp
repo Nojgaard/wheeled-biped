@@ -35,9 +35,9 @@ void IMU::initialize() {
   // Setting value can be calculated as follows:
   // Value = (DMP running rate / ODR ) - 1
   // E.g. For a 5Hz ODR rate when DMP is running at 55Hz, value = (55/5) - 1 = 10.
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Geomag, 4) == ICM_20948_Stat_Ok);
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Accel, 4) == ICM_20948_Stat_Ok);
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 4) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Geomag, 3) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Accel, 3) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 3) == ICM_20948_Stat_Ok);
   // status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, 1) == ICM_20948_Stat_Ok); // Set to the maximum
 
   status_ &= (icm_.enableFIFO() == ICM_20948_Stat_Ok);
@@ -76,40 +76,39 @@ double lsbToGScalar(const ICM_20948 &icm) {
   }
 }
 
-void IMU::read() {
-  icm_.readDMPdataFromFIFO(&data_);
+const sensor_msgs::msg::Imu &IMU::read() {
+  icm_.readDMPdataFromFIFO(&data_dmp_);
 
   while ((icm_.status == ICM_20948_Stat_Ok) || (icm_.status == ICM_20948_Stat_FIFOMoreDataAvail)) {
-    if ((data_.header & DMP_header_bitmap_Geomag) > 0) // We have asked for orientation data so we should receive Quat9
+    if ((data_dmp_.header & DMP_header_bitmap_Geomag) >
+        0) // We have asked for orientation data so we should receive Quat9
     {
       // Scale to +/- 1
-      double q1 = ((double)data_.Geomag.Data.Q1) / 1073741824.0; // Convert to double. Divide by 2^30
-      double q2 = ((double)data_.Geomag.Data.Q2) / 1073741824.0; // Convert to double. Divide by 2^30
-      double q3 = ((double)data_.Geomag.Data.Q3) / 1073741824.0; // Convert to double. Divide by 2^30
+      double q1 = ((double)data_dmp_.Geomag.Data.Q1) / 1073741824.0; // Convert to double. Divide by 2^30
+      double q2 = ((double)data_dmp_.Geomag.Data.Q2) / 1073741824.0; // Convert to double. Divide by 2^30
+      double q3 = ((double)data_dmp_.Geomag.Data.Q3) / 1073741824.0; // Convert to double. Divide by 2^30
       double q0 = std::sqrt(1.0 - ((q1 * q1) + (q2 * q2) + (q3 * q3)));
-      accuracy_ = (double)data_.Geomag.Data.Accuracy;
-      orientation_.x = q1;
-      orientation_.y = q2;
-      orientation_.z = -q3;
-      orientation_.w = q0;
-    } else if ((data_.header & DMP_header_bitmap_Accel) > 0) {
+      accuracy_ = (double)data_dmp_.Geomag.Data.Accuracy;
+      data_imu_.orientation.x = q1;
+      data_imu_.orientation.y = q2;
+      data_imu_.orientation.z = -q3;
+      data_imu_.orientation.w = q0;
+    } else if ((data_dmp_.header & DMP_header_bitmap_Accel) > 0) {
       double lsb2g = lsbToGScalar(icm_);
       double gravity = 9.80665;
-      acceleration_.x = data_.Raw_Accel.Data.X * lsb2g * gravity;
-      acceleration_.y = data_.Raw_Accel.Data.Y * lsb2g * gravity;
-      acceleration_.z = data_.Raw_Accel.Data.Z * lsb2g * gravity;
-    } else if ((data_.header & DMP_header_bitmap_Gyro_Calibr) > 0) {
+      data_imu_.linear_acceleration.x = data_dmp_.Raw_Accel.Data.X * lsb2g * gravity;
+      data_imu_.linear_acceleration.y = data_dmp_.Raw_Accel.Data.Y * lsb2g * gravity;
+      data_imu_.linear_acceleration.z = data_dmp_.Raw_Accel.Data.Z * lsb2g * gravity;
+    } else if ((data_dmp_.header & DMP_header_bitmap_Gyro_Calibr) > 0) {
       double lsb2dps = lsbToDpsScalar(icm_);
       double dps2rps = 0.0174532925;
-      gyro_.x = (data_.Gyro_Calibr.Data.X / 32768) * lsb2dps * dps2rps;
-      gyro_.y = (data_.Gyro_Calibr.Data.Y / 32768) * lsb2dps * dps2rps;
-      gyro_.z = (data_.Gyro_Calibr.Data.Z / 32768) * lsb2dps * dps2rps;
+      data_imu_.angular_velocity.x = (data_dmp_.Gyro_Calibr.Data.X / 32768) * lsb2dps * dps2rps;
+      data_imu_.angular_velocity.y = (data_dmp_.Gyro_Calibr.Data.Y / 32768) * lsb2dps * dps2rps;
+      data_imu_.angular_velocity.z = (data_dmp_.Gyro_Calibr.Data.Z / 32768) * lsb2dps * dps2rps;
     }
   }
+  return data_imu_;
 }
 
 bool IMU::status() const { return status_; }
-const Quaternion &IMU::orientation() const { return orientation_; }
-const Vector3 &IMU::acceleration() const { return acceleration_; }
-const Vector3 &IMU::gyro() const { return gyro_; }
 double IMU::accuracy() const { return accuracy_; }

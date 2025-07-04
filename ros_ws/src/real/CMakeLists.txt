@@ -14,7 +14,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(icm20948)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra -Wpedantic -Wno-vla)
 endif()
 
 # find dependencies
@@ -22,13 +22,21 @@ find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 include_directories(include)
-add_executable(hello_node src/main.cpp src/imu.cpp)
-target_link_libraries(hello_node ICM20948_Lib)
-install(TARGETS hello_node DESTINATION lib/${PROJECT_NAME})
+add_executable(imu_node src/imu_node.cpp src/imu.cpp)
 
+target_link_libraries(imu_node PUBLIC
+  ICM20948_Lib
+  ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  rclcpp::rclcpp
+  sensor_msgs::sensor_msgs_library
+)
 
+install(TARGETS imu_node DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

@@ -2,34 +2,23 @@
 
 #include <ICM_20948.h>
 #include <array>
-
-struct Vector3 {
-  double x, y, z;
-};
-
-struct Quaternion {
-  double x, y, z, w;
-};
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 
 class IMU {
 public:
   IMU();
   void initialize();
-  void read();
+  const sensor_msgs::msg::Imu &read();
 
   bool status() const;
-  const Quaternion& orientation() const;
-  const Vector3& gyro() const;
-  const Vector3& acceleration() const;
   double accuracy() const;
 
 private:
   bool status_;
-  Quaternion orientation_;
-  Vector3 gyro_;
-  Vector3 acceleration_;
   double accuracy_;
-
-  icm_20948_DMP_data_t data_;
+  sensor_msgs::msg::Imu data_imu_;
+  icm_20948_DMP_data_t data_dmp_;
   ICM_20948 icm_;
 };
