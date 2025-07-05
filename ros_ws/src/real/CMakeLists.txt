@@ -13,6 +13,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(icm20948)
 
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic -Wno-vla)
 endif()
@@ -27,6 +28,7 @@ find_package(sensor_msgs REQUIRED)
 
 include_directories(include)
 add_executable(imu_node src/imu_node.cpp src/imu.cpp)
+add_executable(imu_live_calib src/imu_live_calib.cpp src/imu.cpp)
 
 target_link_libraries(imu_node PUBLIC
   ICM20948_Lib
@@ -36,7 +38,16 @@ target_link_libraries(imu_node PUBLIC
   sensor_msgs::sensor_msgs_library
 )
 
+target_link_libraries(imu_live_calib PUBLIC
+  ICM20948_Lib
+  ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  rclcpp::rclcpp
+  sensor_msgs::sensor_msgs_library
+)
+
 install(TARGETS imu_node DESTINATION lib/${PROJECT_NAME})
+install(TARGETS imu_live_calib DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

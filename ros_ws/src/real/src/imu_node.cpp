@@ -2,6 +2,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <real/imu.h>
 
+void print(const geometry_msgs::msg::Vector3 msg) { std::cout << msg.x << " " << msg.y << " " << msg.z << std::endl; }
+
 class IMUNode : public rclcpp::Node {
 public:
   IMUNode() : Node("imu_node") {
@@ -12,6 +14,14 @@ public:
       RCLCPP_ERROR(this->get_logger(), "Failed to initialize IMU! Shutting down...");
       rclcpp::shutdown();
     }
+
+    auto bias_accel = imu_.bias_linear_acceleration();
+    auto bias_gyro = imu_.bias_angular_velocity();
+    auto bias_compass = imu_.bias_compass();
+    RCLCPP_INFO(this->get_logger(),
+                "Loaded biases: Accel: [%.2f %.2f %.2f]  Gyro: [%.2f %.2f %.2f]  Compass: [%.2f %.2f %.2f]",
+                bias_accel.x, bias_accel.y, bias_accel.z, bias_gyro.x, bias_gyro.y, bias_gyro.z, bias_compass.x,
+                bias_compass.y, bias_compass.z);
 
     publisher_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
     timer_ = create_wall_timer(std::chrono::milliseconds(12), std::bind(&IMUNode::publish_imu_data, this));
@@ -65,7 +75,6 @@ int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<IMUNode>();
   rclcpp::spin(node);
-  std::cout << "Im done!" << std::endl;
   rclcpp::shutdown();
   return 0;
 }

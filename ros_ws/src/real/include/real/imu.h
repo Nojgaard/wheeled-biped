@@ -11,11 +11,16 @@ public:
   IMU();
   void initialize();
   const sensor_msgs::msg::Imu &read();
+  geometry_msgs::msg::Vector3 bias_linear_acceleration();
+  geometry_msgs::msg::Vector3 bias_angular_velocity();
+  geometry_msgs::msg::Vector3 bias_compass();
 
   bool status() const;
   double accuracy() const;
 
 private:
+  void try_load_bias();
+
   bool status_;
   double accuracy_;
   sensor_msgs::msg::Imu data_imu_;
