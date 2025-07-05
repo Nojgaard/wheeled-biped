@@ -46,8 +46,8 @@ void IMU::initialize() {
   status_ &= (icm_.resetFIFO() == ICM_20948_Stat_Ok);
 }
 
-double lsbToDpsScalar(const ICM_20948 &icm) {
-  switch (icm.agmt.fss.g) {
+double get_lsb_to_dps(uint8_t gpm) {
+  switch (gpm) {
   case 0:
     return 1 / 131.0;
   case 1:
@@ -61,8 +61,8 @@ double lsbToDpsScalar(const ICM_20948 &icm) {
   }
 }
 
-double lsbToGScalar(const ICM_20948 &icm) {
-  switch (icm.agmt.fss.a) {
+double get_lsb_to_g(uint8_t dps) {
+  switch (dps) {
   case 0:
     return 1 / 16384.0;
   case 1:
@@ -93,19 +93,23 @@ const sensor_msgs::msg::Imu &IMU::read() {
       data_imu_.orientation.y = q2;
       data_imu_.orientation.z = -q3;
       data_imu_.orientation.w = q0;
-    } else if ((data_dmp_.header & DMP_header_bitmap_Accel) > 0) {
-      double lsb2g = lsbToGScalar(icm_);
+    }
+    if ((data_dmp_.header & DMP_header_bitmap_Accel) > 0) {
+      double lsb2g = get_lsb_to_g(gpm4);
       double gravity = 9.80665;
       data_imu_.linear_acceleration.x = data_dmp_.Raw_Accel.Data.X * lsb2g * gravity;
       data_imu_.linear_acceleration.y = data_dmp_.Raw_Accel.Data.Y * lsb2g * gravity;
       data_imu_.linear_acceleration.z = data_dmp_.Raw_Accel.Data.Z * lsb2g * gravity;
-    } else if ((data_dmp_.header & DMP_header_bitmap_Gyro_Calibr) > 0) {
-      double lsb2dps = lsbToDpsScalar(icm_);
-      double dps2rps = 0.0174532925;
-      data_imu_.angular_velocity.x = (data_dmp_.Gyro_Calibr.Data.X / 32768) * lsb2dps * dps2rps;
-      data_imu_.angular_velocity.y = (data_dmp_.Gyro_Calibr.Data.Y / 32768) * lsb2dps * dps2rps;
-      data_imu_.angular_velocity.z = (data_dmp_.Gyro_Calibr.Data.Z / 32768) * lsb2dps * dps2rps;
     }
+    if ((data_dmp_.header & DMP_header_bitmap_Gyro_Calibr) > 0) {
+      double lsb2dps = get_lsb_to_dps(dps2000);
+      double dps2rps = 0.0174532925;
+      const auto& gd = data_dmp_.Raw_Gyro.Data;
+      data_imu_.angular_velocity.x = (gd.X + gd.BiasX) * lsb2dps * dps2rps;
+      data_imu_.angular_velocity.y = (gd.Y + gd.BiasY) * lsb2dps * dps2rps;
+      data_imu_.angular_velocity.z = (gd.Z + gd.BiasZ) * lsb2dps * dps2rps;
+    }
+    icm_.readDMPdataFromFIFO(&data_dmp_);
   }
   return data_imu_;
 }

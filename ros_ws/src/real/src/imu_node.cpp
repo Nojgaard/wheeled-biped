@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<IMUNode>();
   rclcpp::spin(node);
+  std::cout << "Im done!" << std::endl;
   rclcpp::shutdown();
   return 0;
 }
