@@ -111,9 +111,9 @@ const sensor_msgs::msg::Imu &IMU::read() {
       double lsb2dps = get_lsb_to_dps(dps2000);
       double dps2rps = 0.0174532925;
       const auto &gd = data_dmp_.Raw_Gyro.Data;
-      data_imu_.angular_velocity.x = (gd.X + gd.BiasX) * lsb2dps * dps2rps;
-      data_imu_.angular_velocity.y = (gd.Y + gd.BiasY) * lsb2dps * dps2rps;
-      data_imu_.angular_velocity.z = (gd.Z + gd.BiasZ) * lsb2dps * dps2rps;
+      data_imu_.angular_velocity.x = gd.X * lsb2dps * dps2rps;
+      data_imu_.angular_velocity.y = gd.Y * lsb2dps * dps2rps;
+      data_imu_.angular_velocity.z = gd.Z * lsb2dps * dps2rps;
     }
     icm_.readDMPdataFromFIFO(&data_dmp_);
   }
