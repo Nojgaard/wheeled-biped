@@ -5,10 +5,10 @@ from dm_control.mujoco import Physics
 import numpy as np
 
 class BalanceTask(Task):
-    def __init__(self):
+    def __init__(self, robot: Robot):
         super().__init__()
 
-        self.robot = Robot()
+        self.robot = robot
         self._arena = Floor(reflectance=0.0)
         self._arena.add_free_entity(self.robot)
         self.set_timesteps(control_timestep=0.01, physics_timestep=0.005)

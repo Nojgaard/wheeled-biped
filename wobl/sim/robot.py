@@ -1,7 +1,8 @@
+import os
+
+from dm_control import composer, mjcf
 from dm_control.composer import Entity, Observables
-from dm_control import composer
 from dm_control.composer.observation import observable
-from dm_control import mjcf
 from scipy.spatial.transform import Rotation
 
 
@@ -10,8 +11,8 @@ def quat_to_euler(quat):
 
 
 class Robot(Entity):
-    def __init__(self):
-        self._model_path = "assets/robot.xml"
+    def __init__(self, assets_dir = "assets"):
+        self._model_path = os.path.join(assets_dir, "robot.xml")
         super().__init__()
 
     def _build(self):

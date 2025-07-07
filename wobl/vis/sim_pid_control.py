@@ -6,6 +6,8 @@ import numpy as np
 import dearpygui.dearpygui as dpg
 import threading
 
+from wobl.sim.robot import Robot
+
 
 class Gui:
     def __init__(self):
@@ -45,7 +47,8 @@ class Gui:
 
 
 def main():
-    task = BalanceTask()
+    robot = Robot()
+    task = BalanceTask(robot)
     controller = PidBalancer()
     gui = Gui()
     gui.launch()
