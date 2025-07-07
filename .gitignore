@@ -25,3 +25,4 @@ COLCON_IGNORE
 AMENT_IGNORE
 
 ros_ws
+assets/print
