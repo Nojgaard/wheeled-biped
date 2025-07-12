@@ -1,9 +1,10 @@
 #include <fstream>
 #include <math.h>
-#include <nlohmann/json.hpp>
 #include <real/imu.h>
 
-using json = nlohmann::json;
+const double BIAS_LINEAR_ACCELERATION[3] = {-60.0, -168.0, 0.0};
+const double BIAS_ANGULAR_VELOCITY[3] = {0, 0, 0};
+const double BIAS_COMPASS[3] = {8.0, 10.0, -1.0};
 
 IMU::IMU() : icm_("/dev/i2c-1", 0x69) {}
 
@@ -147,19 +148,16 @@ geometry_msgs::msg::Vector3 IMU::bias_compass() {
   return bias;
 }
 
-void IMU::try_load_bias() {
-  std::ifstream ifs("../assets/calibration/imu.json");
-  json j = json::parse(ifs);
-  
-  icm_.setBias(ICM_20948::Bias::AccelX, j["bias_linear_acceleration"][0]);
-  icm_.setBias(ICM_20948::Bias::AccelY, j["bias_linear_acceleration"][1]);
-  icm_.setBias(ICM_20948::Bias::AccelZ, j["bias_linear_acceleration"][2]);
+void IMU::try_load_bias() {  
+  icm_.setBias(ICM_20948::Bias::AccelX, BIAS_LINEAR_ACCELERATION[0]);
+  icm_.setBias(ICM_20948::Bias::AccelY, BIAS_LINEAR_ACCELERATION[1]);
+  icm_.setBias(ICM_20948::Bias::AccelZ, BIAS_LINEAR_ACCELERATION[2]);
 
-  icm_.setBias(ICM_20948::Bias::GyroX, j["bias_angular_velocity"][0]);
-  icm_.setBias(ICM_20948::Bias::GyroY, j["bias_angular_velocity"][1]);
-  icm_.setBias(ICM_20948::Bias::GyroZ, j["bias_angular_velocity"][2]);
+  icm_.setBias(ICM_20948::Bias::GyroX, BIAS_ANGULAR_VELOCITY[0]);
+  icm_.setBias(ICM_20948::Bias::GyroY, BIAS_ANGULAR_VELOCITY[1]);
+  icm_.setBias(ICM_20948::Bias::GyroZ, BIAS_ANGULAR_VELOCITY[2]);
 
-  icm_.setBias(ICM_20948::Bias::MagX, j["bias_compass"][0]);
-  icm_.setBias(ICM_20948::Bias::MagY, j["bias_compass"][1]);
-  icm_.setBias(ICM_20948::Bias::MagZ, j["bias_compass"][2]);
+  icm_.setBias(ICM_20948::Bias::MagX, BIAS_COMPASS[0]);
+  icm_.setBias(ICM_20948::Bias::MagY, BIAS_COMPASS[1]);
+  icm_.setBias(ICM_20948::Bias::MagZ, BIAS_COMPASS[2]);
 }
