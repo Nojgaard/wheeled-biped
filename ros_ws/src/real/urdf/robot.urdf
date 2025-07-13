@@ -1,0 +1,381 @@
+<?xml version="1.0" ?>
+<robot name="converted_robot">
+   <!--generated with mjcf_urdf_simple_converter (https://github.com/Yasu31/mjcf_urdf_simple_converter)-->
+   <link name="world">
+   </link>
+   <link name="body">
+      <visual name="back_cap">
+         <origin xyz="-1.3017893472040155e-06 0.04705168550547671 0.020957944471496792" rpy="1.5707963267948966 0.09910741668815781 1.5707963267948966"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_back_cap.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+      <visual name="back">
+         <origin xyz="-3.85359492032149e-08 0.04173286765710978 0.06858943844446108" rpy="1.5707963267948966 -0.1361996668310712 1.5707963267948966"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_back.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+      <visual name="mounting_plate">
+         <origin xyz="0.0005064714810789949 -0.022630207076506488 0.02728297722637198" rpy="-3.046848796651417 -1.3622233636494134 -1.6118938119900492"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_mounting_plate.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+      <visual name="shell">
+         <origin xyz="2.9272794857905294e-06 -0.03412086291499505 0.05146825679083157" rpy="-1.5707450393008402 -1.0087108776142575 -1.5708175925832464"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_shell.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+      <visual name="battery">
+         <origin xyz="0.0 -0.021999999999999995 0.017500000000000005" rpy="1.5707963267948966 -1.5707963267948966 0.0"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_battery.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <joint type="fixed" name="world2body_fixed">
+      <parent link="world"/>
+      <child link="body"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 1.5707963267948963"/>
+   </joint>
+   <link name="R_leg">
+      <inertial>
+         <origin xyz="0.00018783278849772705 0.005918668289206253 0.01467563643099721" rpy="-0.018424504058215163 0.5085271255131132 1.5302644864367805"/>
+         <mass value="0.095"/>
+         <inertia ixx="3.355776242730135e-05" iyy="2.9983109543121377e-05" izz="1.742999638054603e-05" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="R_hip">
+         <origin xyz="0.00038823186777163423 0.007685755288271978 0.016511936282671336" rpy="-0.07984572359778741 0.5907813735887242 1.4507917776865322"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_R_hip.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+      <visual name="R_hip_servo">
+         <origin xyz="7.093332558794784e-05 0.004887867539751247 0.013604461517520637" rpy="0.02923429886292006 0.3459158051837452 1.571544480597519"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_R_hip_servo.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <joint type="fixed" name="body2R_leg_fixed">
+      <parent link="body"/>
+      <child link="R_leg"/>
+      <origin xyz="-0.0654 0.0 0.0" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="R_thigh">
+      <inertial>
+         <origin xyz="-1.93156937427319e-05 0.029542550175577838 -0.041686377631257654" rpy="-0.0013084836690608892 -0.6166563133427576 1.5707963267948968"/>
+         <mass value="0.04"/>
+         <inertia ixx="6.72480900402196e-05" iyy="5.3689716820993514e-05" izz="1.9513574556234947e-05" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="R_thigh">
+         <origin xyz="-1.93156937427319e-05 0.029542550175577838 -0.041686377631257654" rpy="-0.0013084836690608892 -0.6166563133427577 1.5707963267948966"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_R_thigh.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <link name="R_hip_jointbody">
+      <inertial>
+         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+         <mass value="0.001"/>
+         <inertia ixx="1e-09" iyy="1e-09" izz="1e-09" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+   </link>
+   <joint type="revolute" name="R_hip">
+      <parent link="R_leg"/>
+      <child link="R_hip_jointbody"/>
+      <origin xyz="-0.0177 -8e-06 7e-06" rpy="0.0 0.0 0.0"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="100" velocity="100"/>
+   </joint>
+   <joint type="fixed" name="R_hip_offset">
+      <parent link="R_hip_jointbody"/>
+      <child link="R_thigh"/>
+      <origin xyz="0.0177 8e-06 -7e-06" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="R_shin">
+      <inertial>
+         <origin xyz="-0.0030644877701907214 0.02758176919692322 -0.15408565826256643" rpy="0.06011168617215179 0.6246093917962585 1.5795761449033665"/>
+         <mass value="0.12"/>
+         <inertia ixx="0.0002452394386700719" iyy="0.000239594724237697" izz="2.205816915135748e-05" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="R_shin">
+         <origin xyz="-0.0007732368426556091 0.04750478541050801 -0.12639033739694466" rpy="0.04478536342579842 0.6266757892014847 1.5904754797573628"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_R_shin.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+      <visual name="R_shin_servo">
+         <origin xyz="-0.0053557386977258325 0.007658752983338433 -0.18178097912818825" rpy="0.029476548374650635 0.6286543606640387 1.5716548668968995"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_R_shin_servo.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <link name="R_shin_jointbody">
+      <inertial>
+         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+         <mass value="0.001"/>
+         <inertia ixx="1e-09" iyy="1e-09" izz="1e-09" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+   </link>
+   <joint type="revolute" name="R_shin">
+      <parent link="R_thigh"/>
+      <child link="R_shin_jointbody"/>
+      <origin xyz="-0.0177 0.068524 -0.096679" rpy="0.0 0.0 0.0"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="100" velocity="100"/>
+   </joint>
+   <joint type="fixed" name="R_shin_offset">
+      <parent link="R_shin_jointbody"/>
+      <child link="R_shin"/>
+      <origin xyz="0.0177 -0.068524 0.096679" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="R_link">
+      <inertial>
+         <origin xyz="-1.0357761478282062e-07 0.06453533822888903 -0.01615885569075709" rpy="0.0 -0.3788145161304679 1.5707963267948968"/>
+         <mass value="0.03"/>
+         <inertia ixx="5.223291601939314e-05" iyy="5.082332556459172e-05" izz="2.4974811136368724e-06" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="R_link">
+         <origin xyz="-1.0357761478282062e-07 0.06453533822888903 -0.01615885569075709" rpy="0.0 -0.3788145161304677 1.5707963267948966"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_R_link.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <link name="R_link_jointbody">
+      <inertial>
+         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+         <mass value="0.001"/>
+         <inertia ixx="1e-09" iyy="1e-09" izz="1e-09" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+   </link>
+   <joint type="revolute" name="R_link">
+      <parent link="R_shin"/>
+      <child link="R_link_jointbody"/>
+      <origin xyz="-0.0177 0.086545 -0.071455" rpy="0.0 0.0 0.0"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="100" velocity="100"/>
+   </joint>
+   <joint type="fixed" name="R_link_offset">
+      <parent link="R_link_jointbody"/>
+      <child link="R_link"/>
+      <origin xyz="0.0177 -0.086545 0.071455" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="R_foot">
+      <inertial>
+         <origin xyz="-0.04513895095818226 -0.0008379780728815871 -0.19347312397271466" rpy="2.3935463914845023e-10 3.717269010494739e-05 6.4389915963794836e-06"/>
+         <mass value="0.2809557368467721"/>
+         <inertia ixx="0.00020391702485105176" iyy="0.0001296759369133871" izz="0.000129674731888178" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="R_foot">
+         <origin xyz="-0.04539039068841661 -0.000837938394502894 -0.19347153875108544" rpy="2.932427570976866e-09 0.00013177355507232313 2.2253536207419437e-05"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_R_foot.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <link name="R_foot_jointbody">
+      <inertial>
+         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+         <mass value="0.001"/>
+         <inertia ixx="1e-09" iyy="1e-09" izz="1e-09" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+   </link>
+   <joint type="revolute" name="R_foot">
+      <parent link="R_shin"/>
+      <child link="R_foot_jointbody"/>
+      <origin xyz="-0.0177 -0.000838 -0.193474" rpy="0.0 0.0 0.0"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="100" velocity="100"/>
+   </joint>
+   <joint type="fixed" name="R_foot_offset">
+      <parent link="R_foot_jointbody"/>
+      <child link="R_foot"/>
+      <origin xyz="0.0177 0.000838 0.193474" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="L_leg">
+      <inertial>
+         <origin xyz="-0.00018783278849772694 0.005918668289206252 0.014675636430997207" rpy="0.018424504058215052 0.5085271255131132 1.6113281671530126"/>
+         <mass value="0.095"/>
+         <inertia ixx="3.3557762427301364e-05" iyy="2.998310954312138e-05" izz="1.742999638054604e-05" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="L_hip">
+         <origin xyz="-0.00038823186777163423 0.007685755288271978 0.016511936282671336" rpy="0.07984572359778752 0.5907813735887242 1.690800875903261"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_L_hip.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+      <visual name="L_hip_servo">
+         <origin xyz="-7.09333255879477e-05 0.004887867539751246 0.013604461517520634" rpy="-0.02923429886292017 0.3459158051837452 1.5700481729922744"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_L_hip_servo.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <joint type="fixed" name="body2L_leg_fixed">
+      <parent link="body"/>
+      <child link="L_leg"/>
+      <origin xyz="0.0654 0.0 0.0" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="L_thigh">
+      <inertial>
+         <origin xyz="1.9315693742735344e-05 0.029542550175577838 -0.041686377631257654" rpy="0.0013084836690608892 -0.6166563133427576 1.5707963267948963"/>
+         <mass value="0.04"/>
+         <inertia ixx="6.724809004021961e-05" iyy="5.3689716820993534e-05" izz="1.9513574556234947e-05" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="L_thigh">
+         <origin xyz="1.9315693742735344e-05 0.029542550175577838 -0.041686377631257654" rpy="0.0013084836690608892 -0.6166563133427577 1.5707963267948966"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_L_thigh.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <link name="L_hip_jointbody">
+      <inertial>
+         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+         <mass value="0.001"/>
+         <inertia ixx="1e-09" iyy="1e-09" izz="1e-09" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+   </link>
+   <joint type="revolute" name="L_hip">
+      <parent link="L_leg"/>
+      <child link="L_hip_jointbody"/>
+      <origin xyz="-0.0177 -8e-06 7e-06" rpy="0.0 0.0 0.0"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="100" velocity="100"/>
+   </joint>
+   <joint type="fixed" name="L_hip_offset">
+      <parent link="L_hip_jointbody"/>
+      <child link="L_thigh"/>
+      <origin xyz="0.0177 8e-06 -7e-06" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="L_shin">
+      <inertial>
+         <origin xyz="0.003064487770190723 0.027581769196923216 -0.15408565826256648" rpy="-0.06011168617215212 0.6246093917962581 1.5620165086864266"/>
+         <mass value="0.12"/>
+         <inertia ixx="0.000245239438670072" iyy="0.00023959472423769711" izz="2.20581691513575e-05" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="L_shin">
+         <origin xyz="0.0007732368426556096 0.047504785410508 -0.1263903373969447" rpy="-0.04478536342579842 0.6266757892014847 1.5511171738324303"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_L_shin.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+      <visual name="L_shin_servo">
+         <origin xyz="0.005355738697725837 0.007658752983338434 -0.18178097912818833" rpy="-0.029476548374650746 0.6286543606640391 1.5699377866928939"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_L_shin_servo.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <link name="L_shin_jointbody">
+      <inertial>
+         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+         <mass value="0.001"/>
+         <inertia ixx="1e-09" iyy="1e-09" izz="1e-09" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+   </link>
+   <joint type="revolute" name="L_shin">
+      <parent link="L_thigh"/>
+      <child link="L_shin_jointbody"/>
+      <origin xyz="-0.0177 0.068524 -0.096679" rpy="0.0 0.0 0.0"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="100" velocity="100"/>
+   </joint>
+   <joint type="fixed" name="L_shin_offset">
+      <parent link="L_shin_jointbody"/>
+      <child link="L_shin"/>
+      <origin xyz="0.0177 -0.068524 0.096679" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="L_link">
+      <inertial>
+         <origin xyz="1.0357761478281944e-07 0.06453533822888902 -0.016158855690757087" rpy="0.0 -0.3788145161304679 1.5707963267948968"/>
+         <mass value="0.03"/>
+         <inertia ixx="5.2232916019393134e-05" iyy="5.0823325564591695e-05" izz="2.497481113636869e-06" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="L_link">
+         <origin xyz="1.0357761478281944e-07 0.06453533822888902 -0.016158855690757087" rpy="0.0 -0.3788145161304677 1.5707963267948966"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_L_link.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <link name="L_link_jointbody">
+      <inertial>
+         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+         <mass value="0.001"/>
+         <inertia ixx="1e-09" iyy="1e-09" izz="1e-09" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+   </link>
+   <joint type="revolute" name="L_link">
+      <parent link="L_shin"/>
+      <child link="L_link_jointbody"/>
+      <origin xyz="-0.0177 0.086545 -0.071455" rpy="0.0 0.0 0.0"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="100" velocity="100"/>
+   </joint>
+   <joint type="fixed" name="L_link_offset">
+      <parent link="L_link_jointbody"/>
+      <child link="L_link"/>
+      <origin xyz="0.0177 -0.086545 0.071455" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <link name="L_foot">
+      <inertial>
+         <origin xyz="0.04513895095818226 -0.0008379780728815874 -0.19347312397271466" rpy="2.3935463914845023e-10 -3.717269010472535e-05 -6.4389915963794836e-06"/>
+         <mass value="0.2809557368467721"/>
+         <inertia ixx="0.00020391702485105176" iyy="0.00012967593691338706" izz="0.000129674731888178" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+      <visual name="L_foot">
+         <origin xyz="0.04539039068841661 -0.0008379383945028946 -0.19347153875108544" rpy="2.932427570976866e-09 -0.0001317735550721011 -2.2253536207419437e-05"/>
+         <geometry>
+            <mesh filename="package://real/urdf/converted_L_foot.stl"/>
+         </geometry>
+         <material name="white"/>
+      </visual>
+   </link>
+   <link name="L_foot_jointbody">
+      <inertial>
+         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+         <mass value="0.001"/>
+         <inertia ixx="1e-09" iyy="1e-09" izz="1e-09" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+   </link>
+   <joint type="revolute" name="L_foot">
+      <parent link="L_shin"/>
+      <child link="L_foot_jointbody"/>
+      <origin xyz="-0.0177 -0.000838 -0.193474" rpy="0.0 0.0 0.0"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="100" velocity="100"/>
+   </joint>
+   <joint type="fixed" name="L_foot_offset">
+      <parent link="L_foot_jointbody"/>
+      <child link="L_foot"/>
+      <origin xyz="0.0177 0.000838 0.193474" rpy="0.0 0.0 0.0"/>
+   </joint>
+   <material name="white">
+      <color rgba="1 1 1 1"/>
+   </material>
+</robot>

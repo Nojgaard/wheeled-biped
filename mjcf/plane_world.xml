@@ -15,9 +15,9 @@
 
         <!-- Ground plane -->
         <geom name="ground" type="plane" size="10 10 0.1" material="mat_ground" rgba="0.3 0.3 0.3 1" />
-        <body pos="0 0 0.24">
+        <body pos="0 0 0.24" name="freejoint">
             <joint type="free" />
-            <attach model="robot" prefix="robot"/>
+            <attach model="robot" prefix="" body="body"/>
         </body>
     </worldbody>
 </mujoco>

@@ -1,0 +1,17 @@
+repositories:
+  mujoco_sim_ros2:
+    type: git
+    url: https://github.com/rxdu/mujoco_sim_ros2.git
+    version: devel
+  mujoco_ros2_control:
+    type: git
+    url: https://github.com/rxdu/mujoco_ros2_control.git
+    version: jazzy
+  mujoco_demo_robot:
+    type: git
+    url: https://github.com/rxdu/mujoco_demo_robot.git
+    version: main
+  mujoco:
+    type: git
+    url: https://github.com/google-deepmind/mujoco.git
+    version: 3.3.0

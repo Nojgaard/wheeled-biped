@@ -28,10 +28,12 @@ find_package(sensor_msgs REQUIRED)
 
 add_subdirectory(external/scservo)
 
-include_directories(include external)
+include_directories(include)
+include_directories(external)
 
 add_executable(imu_node src/imu_node.cpp src/imu.cpp)
 add_executable(imu_live_calib src/imu_live_calib.cpp src/imu.cpp)
+add_executable(servo_node src/servo_driver.cpp)
 
 target_link_libraries(imu_node PUBLIC
   ICM20948_Lib
@@ -63,5 +65,13 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
+file(GLOB MJCF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/mjcf/*.xml")
+file(GLOB STL_FILES "${CMAKE_CURRENT_SOURCE_DIR}/mjcf/stl/*.stl")
+install(FILES ${MJCF_FILES} DESTINATION share/${PROJECT_NAME}/mjcf)
+install(FILES ${STL_FILES} DESTINATION share/${PROJECT_NAME}/mjcf/stl)
 
 ament_package()

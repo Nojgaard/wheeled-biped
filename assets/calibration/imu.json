@@ -1,5 +1,0 @@
-{
-    "bias_linear_acceleration": [-60.0, -168.0, 0.0],
-    "bias_angular_velocity": [0, 0, 0],
-    "bias_compass": [8.0, 10.0, -1.0]
-}
