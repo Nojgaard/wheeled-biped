@@ -10,18 +10,19 @@ from ament_index_python.packages import get_package_share_directory
 import xacro
 
 def generate_launch_description():
-    pkg_share = get_package_share_directory('real')
+    pkg_description = get_package_share_directory('wobl_description')
+    pkg_bringup = get_package_share_directory('wobl_bringup')
 
     # Paths
-    xacro_path = os.path.join(pkg_share, 'urdf', 'ros2_control.urdf.xacro')
-    mjcf_path = os.path.join(pkg_share, 'mjcf', 'plane_world.xml')
-    controller_yaml = os.path.join(pkg_share, 'config', 'wobl.yaml')
+    xacro_path = os.path.join(pkg_description, 'urdf', 'ros2_control.urdf.xacro')
+    mjcf_path = os.path.join(pkg_description, 'mjcf', 'plane_world.xml')
+    controller_yaml = os.path.join(pkg_bringup, 'config', 'wobl.yaml')
 
     # Process Xacro
     robot_description_config = xacro.process_file(xacro_path)
     robot_description = {'robot_description': robot_description_config.toxml()}
 
-    mujoco_node = Node(
+    """mujoco_node = Node(
         package='mujoco_ros2_control',
         executable='mujoco_ros2_control',
         output='screen',
@@ -29,7 +30,13 @@ def generate_launch_description():
             controller_yaml,
             {'mujoco_model_path': mjcf_path}
         ]
-    )
+    )"""
+
+    mujoco_node = Node(
+        package='mujoco_sim_ros2',
+        executable='mujoco_sim',
+        parameters=[controller_yaml],
+        output='screen')
 
     # Node: robot_state_publisher
     rsp_node = Node(
@@ -71,7 +78,6 @@ def generate_launch_description():
 
     # Launch description
     return LaunchDescription([
-        DeclareLaunchArgument('use_sim_time', default_value='true'),
         mujoco_node,
         rsp_node,
         spawn_controllers_handler

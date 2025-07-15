@@ -1,7 +1,7 @@
 #include <chrono>
 #include <iostream>
 #include <math.h>
-#include <real/imu.h>
+#include <wobl_hardware/imu.h>
 #include <thread>
 
 geometry_msgs::msg::Vector3 quat_to_euler(const geometry_msgs::msg::Quaternion &q) {

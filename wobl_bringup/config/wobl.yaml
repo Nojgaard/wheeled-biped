@@ -1,3 +1,10 @@
+mujoco_sim_ros2_node:
+  ros__parameters:
+    model_package: wobl_description
+    model_file: 'mjcf/plane_world.xml'
+    physics_plugins:
+      - 'mujoco_ros2_control::MujocoRos2ControlPlugin'
+
 controller_manager:
   ros__parameters:
     update_rate: 80  # Hz

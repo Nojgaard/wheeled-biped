@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wobl">
-  <xacro:include filename="$(find real)/urdf/robot.urdf"/>
+  <xacro:include filename="$(find wobl_description)/urdf/robot.urdf"/>
   <ros2_control name="MujocoSystem" type="system">
     <hardware>
       <plugin>mujoco_ros2_control/MujocoSystem</plugin>

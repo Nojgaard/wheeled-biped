@@ -1,6 +1,6 @@
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
-#include <real/imu.h>
+#include <wobl_hardware/imu.h>
 
 void print(const geometry_msgs::msg::Vector3 msg) { std::cout << msg.x << " " << msg.y << " " << msg.z << std::endl; }
 
