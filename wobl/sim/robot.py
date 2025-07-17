@@ -29,6 +29,12 @@ class Robot(Entity):
         framequat_element = self._entity.mjcf_model.sensor.framequat
         quat = physics.bind(framequat_element).sensordata
         return Rotation.from_quat(quat, scalar_first=True).as_euler("XYZ")
+    
+    def mjcf_joints(self):
+        return self.mjcf_model.find_all("joint") 
+
+    def joint_names(self):
+        return [j.name for j in self.mjcf_joints()]
 
     @property
     def observables(self) -> "RobotObservables":
@@ -47,25 +53,22 @@ class RobotObservables(Observables):
     def joint_velocities(self):
         all_joints = self._entity.mjcf_model.find_all("joint")
         return observable.MJCFFeature("qvel", all_joints)
+    
+    @composer.observable
+    def joint_efforts(self):
+        return observable.Generic(lambda physics: physics.data.actuator_force)
 
     @composer.observable
-    def gyro(self):
+    def angular_velocity(self):
         return observable.MJCFFeature(
             "sensordata",
             self._entity.mjcf_model.sensor.gyro,
         )
 
     @composer.observable
-    def accelerometer(self):
+    def linear_acceleration(self):
         return observable.MJCFFeature(
             "sensordata", self._entity.mjcf_model.sensor.accelerometer
-        )
-    
-    @composer.observable
-    def linear_velocity(self):
-        return observable.MJCFFeature(
-            "sensordata",
-            self._entity.mjcf_model.sensor.velocimeter,
         )
 
     def read_orientation(self, physics):
@@ -75,4 +78,7 @@ class RobotObservables(Observables):
 
     @composer.observable
     def orientation(self):
-        return observable.Generic(self.read_orientation)
+        return observable.MJCFFeature(
+            "sensordata", self._entity.mjcf_model.sensor.framequat
+        )
+        #return observable.Generic(self.read_orientation)

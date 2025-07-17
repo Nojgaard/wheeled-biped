@@ -3,7 +3,7 @@
         {
             "name": "ROS2",
             "compileCommands": [
-                "${workspaceFolder}/ros_ws/build/compile_commands.json"
+                "${workspaceFolder}/build/compile_commands.json"
             ],
             "intelliSenseMode": "linux-gcc-x64",
             "compilerPath": "/usr/bin/g++",

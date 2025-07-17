@@ -18,6 +18,9 @@ controller_manager:
     position_controller:
       type: position_controllers/JointGroupPositionController
 
+    pid_balance_controller:
+      type: wobl_controllers/PidBalanceController
+
 velocity_controller:
   ros__parameters:
     joints:

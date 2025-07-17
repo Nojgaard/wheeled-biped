@@ -13,8 +13,13 @@ class BalanceTask(Task):
         self._arena.add_free_entity(self.robot)
         self.set_timesteps(control_timestep=0.01, physics_timestep=0.005)
 
+        self.robot.observables.joint_positions.enabled = True
+        self.robot.observables.joint_velocities.enabled = True
+        self.robot.observables.joint_efforts.enabled = True
+
         self.robot.observables.orientation.enabled = True
-        self.robot.observables.linear_velocity.enabled = True
+        self.robot.observables.angular_velocity.enabled = True
+        self.robot.observables.linear_acceleration.enabled = True
 
     def initialize_episode(self, physics: Physics, random_state):
         self.robot.set_pose(

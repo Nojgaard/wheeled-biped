@@ -37,7 +37,7 @@
     </asset>
     <worldbody>
         <body name="body" quat="0.7071 0 0 0.7071">
-            <site name="ImuSensor" pos="0 0 0.05" />
+            <site name="ImuSensor" pos="0 0 0" euler="0 0 1.57079633"/>
             <geom mesh="back_cap" mass="0.015" />
             <geom mesh="back" mass="0.02" />
             <geom mesh="mounting_plate" mass="0.16" />

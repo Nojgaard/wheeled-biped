@@ -54,17 +54,10 @@ def generate_launch_description():
         output='screen'
     )
 
-    spawner_velocity = Node(
+    spawner_balance_controller = Node(
         package='controller_manager',
         executable='spawner',
-        arguments=['velocity_controller'],
-        output='screen'
-    )
-
-    spawner_position = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['position_controller'],
+        arguments=['pid_balance_controller'],
         output='screen'
     )
 
@@ -72,7 +65,7 @@ def generate_launch_description():
     spawn_controllers_handler = RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=mujoco_node,
-            on_start=[spawner_joint_state, spawner_velocity, spawner_position]
+            on_start=[spawner_joint_state, spawner_balance_controller]
         )
     )
 
