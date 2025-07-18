@@ -85,6 +85,12 @@
         "regex": "cpp",
         "source_location": "cpp",
         "shared_mutex": "cpp",
-        "stdfloat": "cpp"
+        "stdfloat": "cpp",
+        "csetjmp": "cpp",
+        "any": "cpp",
+        "hash_map": "cpp",
+        "ranges": "cpp",
+        "scoped_allocator": "cpp",
+        "valarray": "cpp"
     }
 }

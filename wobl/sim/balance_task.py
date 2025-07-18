@@ -21,6 +21,8 @@ class BalanceTask(Task):
         self.robot.observables.angular_velocity.enabled = True
         self.robot.observables.linear_acceleration.enabled = True
 
+        self.robot.observables.linear_velocity.enabled = True
+
     def initialize_episode(self, physics: Physics, random_state):
         self.robot.set_pose(
             physics, np.array([0, 0, 0.24]), np.array([1, 0, 0, 0])

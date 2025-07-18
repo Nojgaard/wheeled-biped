@@ -29,26 +29,39 @@ class MujocoBridgeNode(Node):
             JointCommand, "joint_commands", self.command_callback, 10
         )
 
-        self._publish_imu_state = self.create_publisher(Imu, "imu/data", 10)
-        self._publish_joint_state = self.create_publisher(JointState, "joint_states")
+        self._publish_imu_state = self.create_publisher(Imu, "imu/data", 1)
+        self._publish_joint_state = self.create_publisher(JointState, "joint_states", 1)
 
     def command_callback(self, msg: JointCommand):
         self._action[:] = msg.position
 
     def publish_joints(self, timestep: TimeStep):
         joint_state = JointState()
-        joint_state.name = self._robot.joint_names()
+        joint_state.name = self._robot.joint_names
         joint_state.position = timestep.observation["robot/joint_positions"]
         joint_state.velocity = timestep.observation["robot/joint_velocities"]
         joint_state.effort = timestep.observation["robot/joint_efforts"]
-        self._publish_joint_state(joint_state)
+        self._publish_joint_state.publish(joint_state)
 
     def publish_imu(self, timestep: TimeStep):
         imu = Imu()
-        imu.orientation = timestep.observation["robot/orientation"]
-        imu.angular_velocity = timestep.observation["robot/angular_velocity"]
-        imu.linear_acceleration = timestep.observation["robot/linear_acceleration"]
-        self._publish_imu_state(imu)
+
+        q = timestep.observation["robot/orientation"]
+        imu.orientation.w = q[0]
+        imu.orientation.x = q[1]
+        imu.orientation.y = q[2]
+        imu.orientation.z = q[3]
+        
+        avel = timestep.observation["robot/angular_velocity"]
+        imu.angular_velocity.x = avel[0]
+        imu.angular_velocity.y = avel[1]
+        imu.angular_velocity.z = avel[2]
+
+        lacc = timestep.observation["robot/linear_acceleration"] 
+        imu.linear_acceleration.x = lacc[0]
+        imu.linear_acceleration.y = lacc[1]
+        imu.linear_acceleration.z = lacc[2]
+        self._publish_imu_state.publish(imu)
 
     def update_sim(self, timestep: TimeStep):
         self.publish_imu(timestep)

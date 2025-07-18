@@ -11,12 +11,14 @@ def quat_to_euler(quat):
 
 
 class Robot(Entity):
-    def __init__(self, assets_dir = "assets"):
+    def __init__(self, assets_dir = "wobl_description/mjcf"):
         self._model_path = os.path.join(assets_dir, "robot.xml")
         super().__init__()
 
     def _build(self):
         self._model = mjcf.from_path(self._model_path)
+        self.joint_names = ["L_hip", "R_hip", "L_foot", "R_foot"]
+        self.mjcf_joints = [self.mjcf_model.find('joint', name) for name in self.joint_names]
 
     @property
     def mjcf_model(self):
@@ -29,12 +31,6 @@ class Robot(Entity):
         framequat_element = self._entity.mjcf_model.sensor.framequat
         quat = physics.bind(framequat_element).sensordata
         return Rotation.from_quat(quat, scalar_first=True).as_euler("XYZ")
-    
-    def mjcf_joints(self):
-        return self.mjcf_model.find_all("joint") 
-
-    def joint_names(self):
-        return [j.name for j in self.mjcf_joints()]
 
     @property
     def observables(self) -> "RobotObservables":
@@ -46,13 +42,11 @@ class RobotObservables(Observables):
 
     @composer.observable
     def joint_positions(self):
-        all_joints = self._entity.mjcf_model.find_all("joint")
-        return observable.MJCFFeature("qpos", all_joints)
+        return observable.MJCFFeature("qpos", self._entity.mjcf_joints)
 
     @composer.observable
     def joint_velocities(self):
-        all_joints = self._entity.mjcf_model.find_all("joint")
-        return observable.MJCFFeature("qvel", all_joints)
+        return observable.MJCFFeature("qvel", self._entity.mjcf_joints)
     
     @composer.observable
     def joint_efforts(self):
@@ -82,3 +76,10 @@ class RobotObservables(Observables):
             "sensordata", self._entity.mjcf_model.sensor.framequat
         )
         #return observable.Generic(self.read_orientation)
+
+    @composer.observable
+    def linear_velocity(self):
+        return observable.MJCFFeature(
+            "sensordata",
+            self._entity.mjcf_model.sensor.velocimeter,
+        )

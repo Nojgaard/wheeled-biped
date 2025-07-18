@@ -10,46 +10,27 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(controller_interface REQUIRED)
-find_package(pluginlib REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(control_toolbox REQUIRED)
+find_package(wobl_messages REQUIRED)
 
 # Include dirs
-include_directories(
-  include
-)
+include_directories(include)
 
 # Define the plugin
-add_library(pid_balance_controller SHARED
-  src/pid_balance_controller.cpp
-)
+add_executable(pid_balance_controller src/pid_balance_controller_node.cpp)
 
 ament_target_dependencies(pid_balance_controller
-  controller_interface
-  pluginlib
   rclcpp
+  sensor_msgs
+  control_toolbox
+  wobl_messages
 )
 
-# Install the plugin description file
-#install(
-#  FILES my_custom_controller_plugin.xml
-#  DESTINATION share/${PROJECT_NAME}
-#)
-
-# Install the header
-install(
-  DIRECTORY include/
-  DESTINATION include/
-)
-
-install(
-  FILES plugin.xml
-  DESTINATION share/${PROJECT_NAME}
-)
-
-# Install the library
-install(
-  TARGETS pid_balance_controller
-  DESTINATION share/${PROJECT_NAME}
+install(TARGETS
+  pid_balance_controller
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()

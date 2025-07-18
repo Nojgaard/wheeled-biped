@@ -56,12 +56,18 @@ def main():
     def policy(timestep: TimeStep):
         if timestep.step_type == StepType.FIRST:
             controller._pitch_pid.reset()
+        joint_velocities = timestep.observation["robot/joint_velocities"]
+        print(timestep.observation["robot/joint_efforts"])
+        velocity = ((joint_velocities[2] +joint_velocities[3])  / 2) * 0.08
+
+        #velocity = timestep.observation["robot/linear_velocity"][0]
+        print("linvel", timestep.observation["robot/linear_velocity"][0])
         orientation = timestep.observation["robot/orientation"]
-        linear_velocity = timestep.observation["robot/linear_velocity"]
+        #linear_velocity = timestep.observation["robot/linear_velocity"]
         controller.target_velocity = gui.velocity
         controller.target_yaw_rate = gui.yaw_rate
         lvel, rvel = controller.update(
-            task.control_timestep, orientation, linear_velocity
+            task.control_timestep, orientation, velocity, 
         )
 
         return np.array([0.0, 0.0, lvel, rvel])
