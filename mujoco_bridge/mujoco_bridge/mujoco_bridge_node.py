@@ -26,14 +26,15 @@ class MujocoBridgeNode(Node):
         self._thread.start()
 
         self.subscriber = self.create_subscription(
-            JointCommand, "joint_commands", self.command_callback, 10
+            JointCommand, "joint_commands", self.command_callback, 1
         )
 
         self._publish_imu_state = self.create_publisher(Imu, "imu/data", 1)
         self._publish_joint_state = self.create_publisher(JointState, "joint_states", 1)
 
     def command_callback(self, msg: JointCommand):
-        self._action[:] = msg.position
+        self._action[:2] = msg.position[:2]
+        self._action[2:] = msg.velocity[2:]
 
     def publish_joints(self, timestep: TimeStep):
         joint_state = JointState()
@@ -61,6 +62,8 @@ class MujocoBridgeNode(Node):
         imu.linear_acceleration.x = lacc[0]
         imu.linear_acceleration.y = lacc[1]
         imu.linear_acceleration.z = lacc[2]
+
+        imu.header.stamp = self.get_clock().now().to_msg()
         self._publish_imu_state.publish(imu)
 
     def update_sim(self, timestep: TimeStep):

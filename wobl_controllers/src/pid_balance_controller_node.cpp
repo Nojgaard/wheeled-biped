@@ -6,79 +6,93 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <wobl_messages/msg/joint_command.hpp>
 
+using JointState = sensor_msgs::msg::JointState;
+using Imu = sensor_msgs::msg::Imu;
+using JointCommand = wobl_messages::msg::JointCommand;
+
+class PidBalanceController {
+public:
+  PidBalanceController() {
+    control_toolbox::AntiWindupStrategy aws;
+    aws.type = control_toolbox::AntiWindupStrategy::CONDITIONAL_INTEGRATION;
+    aws.i_min = -0.05;
+    aws.i_max = 0.05;
+
+    pid_pitch.initialize(40.0, 0.0, 5.0, 10, -10, aws);
+    pid_velocity.initialize(0.5, 0.1, 0.0, 0.17, -0.17, aws);
+  }
+
+  double extract_pitch(const geometry_msgs::msg::Quaternion &q) {
+    tf2::Quaternion quat(q.x, q.y, q.z, q.w);
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+    return -pitch;
+  }
+
+  double wheel_velocity(const JointState &joint_state) {
+    return ((joint_state.velocity[2] + joint_state.velocity[3]) / 2) * 0.08;
+  }
+
+  JointCommand update(const JointState &joint_state, const Imu &imu, const rclcpp::Duration &dt) {
+    velocity_ = velocity_ * 0.9 + wheel_velocity(joint_state) * 0.1;
+    auto pitch = extract_pitch(imu.orientation);
+
+    double cmd_pitch = pid_velocity.compute_command(-velocity_, dt);
+    double cmd_velocity = pid_pitch.compute_command(pitch - cmd_pitch, dt);
+
+    wobl_messages::msg::JointCommand cmd_joint;
+    cmd_joint.position = {0, 0, 0, 0};
+    cmd_joint.velocity = {0, 0, cmd_velocity, cmd_velocity};
+    return cmd_joint;
+  }
+
+private:
+  double velocity_;
+  control_toolbox::Pid pid_pitch;
+  control_toolbox::Pid pid_velocity;
+};
+
 class PidBalanceControllerNode : public rclcpp::Node {
 public:
   PidBalanceControllerNode() : Node("pid_balance_controller") {
-    control_toolbox::AntiWindupStrategy aw_back;
-    aw_back.type = control_toolbox::AntiWindupStrategy::CONDITIONAL_INTEGRATION;
-    aw_back.i_min = -0.05;
-    aw_back.i_max = 0.05;
-
-    pid_velocity = control_toolbox::Pid();
-    pid_pitch = control_toolbox::Pid();
-    pid_pitch.initialize(40.0, 0.0, 5.0, 10, -10, aw_back);
-    pid_velocity.initialize(0.5, 0.1, 0.0, 0.17, -0.17, aw_back);
-
-    // pid_pitch.initialize(40.0, 0.0, 5, 10.0, -10.0, windup_strat);
-    joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
-        "joint_states", rclcpp::SensorDataQoS(), [this](const sensor_msgs::msg::JointState &msg) {
-          received_joint_state_data_ = true;
-          joint_state_ = msg;
-        });
+    joint_state_subscriber_ = this->create_subscription<JointState>(
+        "joint_states", rclcpp::SensorDataQoS(), [this](const JointState &msg) { joint_state_ = msg; });
 
     imu_subscriber_ =
-        this->create_subscription<sensor_msgs::msg::Imu>("imu/data", rclcpp::SensorDataQoS(), [this](const sensor_msgs::msg::Imu &msg) {
-          received_imu_data_ = true;
-          imu_ = msg;
-        });
+        this->create_subscription<Imu>("imu/data", rclcpp::SensorDataQoS(), [this](const Imu &msg) { imu_ = msg; });
 
-    command_publisher_ = this->create_publisher<wobl_messages::msg::JointCommand>("joint_commands", 1);
+    command_publisher_ = this->create_publisher<JointCommand>("joint_commands", 1);
     last_time_ = this->now();
     timer_ = create_wall_timer(std::chrono::milliseconds(20), std::bind(&PidBalanceControllerNode::update, this));
   }
 
 private:
-  std::tuple<double, double, double> quat_to_euler(const geometry_msgs::msg::Quaternion &q) {
-    tf2::Quaternion quat(q.x, q.y, q.z, q.w);
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-    return {roll, -pitch, yaw};
-  }
-
-  double wheel_velocity() { return ((joint_state_.velocity[2] + joint_state_.velocity[3]) / 2) * 0.08; }
+  bool is_joint_state_ready() { return !joint_state_.name.empty(); }
+  bool is_imu_ready() { return imu_.header.stamp.sec != 0 || imu_.header.stamp.nanosec != 0; }
 
   void update() {
-    if (!received_imu_data_ || !received_joint_state_data_ || last_time_.nanoseconds() == 0) {
+    if (!is_imu_ready() || !is_joint_state_ready()) {
       return;
     }
 
     rclcpp::Time current_time = this->now();
     rclcpp::Duration dt = current_time - last_time_;
     last_time_ = current_time;
+    if (dt.seconds() < 0)
+      return;
 
-    velocity_ = velocity_ * 0.9 + wheel_velocity() * 0.1;
-    auto [roll, pitch, yaw] = quat_to_euler(imu_.orientation);
-    double fwd_velocity = -velocity_;
-
-    double cmd_pitch = pid_velocity.compute_command(-fwd_velocity, dt);
-    double cmd_velocity = pid_pitch.compute_command(cmd_pitch + pitch, dt);
-
-    wobl_messages::msg::JointCommand cmd_joint;
-    cmd_joint.velocity = {0, 0, cmd_velocity, cmd_velocity};
+    JointCommand cmd_joint = controller.update(joint_state_, imu_, dt);
     command_publisher_->publish(cmd_joint);
   }
 
-  bool received_imu_data_;
-  bool received_joint_state_data_;
-  double velocity_;
-  control_toolbox::Pid pid_pitch, pid_velocity;
+  PidBalanceController controller;
   rclcpp::Time last_time_;
 
-  sensor_msgs::msg::JointState joint_state_;
-  sensor_msgs::msg::Imu imu_;
-  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
-  rclcpp::Publisher<wobl_messages::msg::JointCommand>::SharedPtr command_publisher_;
+  JointState joint_state_;
+  Imu imu_;
+  rclcpp::Subscription<JointState>::SharedPtr joint_state_subscriber_;
+  rclcpp::Subscription<Imu>::SharedPtr imu_subscriber_;
+  rclcpp::Publisher<JointCommand>::SharedPtr command_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 
