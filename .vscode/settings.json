@@ -7,6 +7,9 @@
     "flake8.path": [
         "flake8"
     ],
+    "python.experiments.optOutFrom": [
+        "pythonTerminalEnvVarActivation"
+    ],
     "files.associations": {
         "cctype": "cpp",
         "clocale": "cpp",
