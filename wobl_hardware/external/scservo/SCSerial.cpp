@@ -38,11 +38,11 @@ bool SCSerial::begin(int baudRate, const char* serialPort)
     if(serialPort == NULL)
 		return false;
     fd = open(serialPort, O_RDWR | O_NOCTTY | O_NONBLOCK);
-    if(fd == -1){
-		perror("open:");
+    if (fd == -1) {
+        perror("open");
         return false;
-	}
-    fcntl(fd, F_SETFL, FNDELAY);
+    }
+
     tcgetattr(fd, &orgopt);
     tcgetattr(fd, &curopt);
     speed_t CR_BAUDRATE;
@@ -192,6 +192,6 @@ void SCSerial::wFlushSCS()
 
 void SCSerial::end()
 {
+    close(fd);
 	fd = -1;
-	close(fd);
 }

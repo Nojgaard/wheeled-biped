@@ -1,31 +1,33 @@
 #include <algorithm>
+#include <iostream>
 #include <math.h>
 #include <wobl_hardware/servo_driver.hpp>
-
 bool ServoDriver::initialize() { return servo_.begin(baudrate_, port_.c_str()); }
 
 ServoDriver::~ServoDriver() { servo_.end(); }
 
 bool ServoDriver::ping(u8 servo_id) { return servo_.Ping(servo_id) != -1; }
 
-bool ServoDriver::set_mode(u8 servo_id, ServoDriver::ServoMode mode) { return servo_.Mode(servo_id, mode) == 0; }
+bool ServoDriver::set_mode(u8 servo_id, ServoDriver::ServoMode mode) { return servo_.Mode(servo_id, mode); }
 
 bool ServoDriver::write_position(u8 servo_id, double position_rad, double velocity_rps, double acceleration_rps2) {
-  uint16_t position_steps = std::clamp(radians_to_steps(position_rad), 0, STEPS_PER_REVOLUTION_ - 1);
-  uint16_t velocity_steps = std::clamp(radians_to_steps(velocity_rps), 0, MAX_SPEED_);
-  uint8_t acceleration_steps = std::clamp(radians_to_steps(acceleration_rps2), 0, MAX_ACCELERATION_);
-  return servo_.WritePosEx(servo_id, position_steps, velocity_steps, acceleration_steps) == 0;
+
+  u16 position_steps =
+      std::clamp(radians_to_steps(position_rad) + STEPS_PER_REVOLUTION_ / 2, 0, STEPS_PER_REVOLUTION_ - 1);
+  u16 velocity_steps = std::clamp(radians_to_steps(velocity_rps), -MAX_SPEED_, MAX_SPEED_);
+  u8 acceleration_steps = std::clamp(radians_to_steps(acceleration_rps2), 0, MAX_ACCELERATION_);
+  return servo_.WritePosEx(servo_id, position_steps, velocity_steps, acceleration_steps);
 }
 
 bool ServoDriver::write_velocities(u8 servo_id, double velocity_rps, double acceleration_rps2) {
-  uint16_t velocity_steps = std::clamp(radians_to_steps(velocity_rps), 0, MAX_SPEED_);
-  uint8_t acceleration_steps = std::clamp(radians_to_steps(acceleration_rps2), 0, MAX_ACCELERATION_);
-  return servo_.WriteSpe(servo_id, velocity_steps, acceleration_steps) == 0;
+  u16 velocity_steps = std::clamp(radians_to_steps(velocity_rps), -MAX_SPEED_, MAX_SPEED_);
+  u8 acceleration_steps = std::clamp(radians_to_steps(acceleration_rps2), 0, MAX_ACCELERATION_);
+  return servo_.WriteSpe(servo_id, velocity_steps, acceleration_steps);
 }
 
-bool ServoDriver::set_midpoint(u8 servo_id) { return servo_.CalibrationOfs(servo_id) == 0; }
+bool ServoDriver::set_midpoint(u8 servo_id) { return servo_.CalibrationOfs(servo_id); }
 
-bool ServoDriver::enable_torque(u8 servo_id, bool is_on) { return servo_.EnableTorque(servo_id, is_on) == 0; }
+bool ServoDriver::enable_torque(u8 servo_id, bool is_on) { return servo_.EnableTorque(servo_id, is_on); }
 
 bool ServoDriver::set_id(u8 servo_id, u8 new_servo_id) {
   if (!servo_.unLockEprom(servo_id))
@@ -42,7 +44,7 @@ ServoDriver::ServoState ServoDriver::read_state(u8 servo_id) {
   state.success = servo_.FeedBack(servo_id) != -1;
   if (!state.success)
     return state;
-  state.position_rad = steps_to_radians(servo_.ReadPos(-1));
+  state.position_rad = steps_to_radians(servo_.ReadPos(-1) - STEPS_PER_REVOLUTION_ / 2);
   state.velocity_rps = steps_to_radians(servo_.ReadSpeed(-1));
   state.effort_pct = effort_to_nm(servo_.ReadLoad(-1));
 

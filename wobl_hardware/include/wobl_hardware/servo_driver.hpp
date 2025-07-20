@@ -38,8 +38,8 @@ private:
 
   int radians_to_steps(double radians) const;
 
-  int baudrate_ = 1000000;
-  std::string port_ = "/dev/ttyACA0";
+  int baudrate_ = 115200;
+  std::string port_ = "/dev/ttyAMA0";
 
   const int STEPS_PER_REVOLUTION_ = 4096;
   const int MAX_SPEED_ = 6800;

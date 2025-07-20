@@ -43,7 +43,8 @@ void print_diagnostics(const ServoDriver::ServoState& st) {
               << st.velocity_rps << " rps | Eff: " 
               << st.effort_pct << "% | Volt: " 
               << st.voltage_volts << " V | Temp: " 
-              << st.temperature_celcius << "°C   "
+              << st.temperature_celcius << "°C | Cur: "
+              << st.current_amps << "A   "
               << std::flush;
 }
 
@@ -81,7 +82,6 @@ int main() {
     for (double target : pos_sequence) {
         std::cout << "Moving to position " << target << " rad\n";
         driver.write_position(ID, target, 1.0);
-
         // Wait until motion completes or error/quit
         while (true) {
             auto st = driver.read_state(ID);
@@ -118,7 +118,7 @@ int main() {
     std::vector<double> vel_sequence{1.0, -1.0, 0.5, 0.0}; // rps
 
     for (double target_vel : vel_sequence) {
-        std::cout << "Commanding velocity " << target_vel << " rps for 5 seconds\n";
+        std::cout << "Commanding velocity " << target_vel << " rps for 3 seconds\n";
         driver.write_velocities(ID, target_vel);
 
         auto start = std::chrono::steady_clock::now();
@@ -141,8 +141,8 @@ int main() {
 
             auto now = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start);
-            if (elapsed.count() >= 5) {
-                std::cout << "\n5 seconds elapsed. Moving to next velocity.\n\n";
+            if (elapsed.count() >= 3) {
+                std::cout << "\n3 seconds elapsed. Moving to next velocity.\n\n";
                 break;
             }
 
