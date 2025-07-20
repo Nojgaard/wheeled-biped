@@ -17,20 +17,16 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(icm20948)
 
+add_subdirectory(external/scservo)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(wobl_messages REQUIRED)
 
-# ============================
-# Common include dirs
-# ============================
-
-set(PROJECT_INCLUDE_DIRS
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/external
-)
+include_directories(include external)
 
 # ============================
 # IMU Nodes
@@ -45,9 +41,6 @@ add_executable(imu_live_calib
   src/imu_live_calib.cpp
   src/imu.cpp
 )
-
-target_include_directories(imu_node PUBLIC ${PROJECT_INCLUDE_DIRS})
-target_include_directories(imu_live_calib PUBLIC ${PROJECT_INCLUDE_DIRS})
 
 target_link_libraries(imu_node ICM20948_Lib)
 target_link_libraries(imu_live_calib ICM20948_Lib)
@@ -69,19 +62,19 @@ ament_target_dependencies(imu_live_calib
 # Servo Node
 # ============================
 
-add_executable(servo_node
-  src/servo_driver.cpp
-)
+add_library(servo_driver src/servo_driver.cpp)
+target_link_libraries(servo_driver SCServo)
 
-target_include_directories(servo_node PUBLIC ${PROJECT_INCLUDE_DIRS})
+add_executable(servo_test tools/servo_driver_test.cpp)
+target_link_libraries(servo_test servo_driver)
 
 # If your scservo lib builds a library, link it:
 # Example:
 # target_link_libraries(servo_node PUBLIC scservo_lib)
 
-ament_target_dependencies(servo_node
-  rclcpp
-)
+#ament_target_dependencies(servo_node
+#  rclcpp
+#)
 
 # ============================
 # Install Targets
@@ -90,20 +83,8 @@ ament_target_dependencies(servo_node
 install(TARGETS
   imu_node
   imu_live_calib
-  servo_node
+  servo_test
   DESTINATION lib/${PROJECT_NAME}
 )
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
 
 ament_package()

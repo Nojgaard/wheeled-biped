@@ -257,3 +257,16 @@ int SMS_STS::ReadCurrent(int ID)
 	return Current;
 }
 
+// https://github.com/adityakamath/SCServo_Linux/blob/main/SMS_STS.cpp
+int SMS_STS::Mode(u8 ID, u8 mode)
+{
+	// Modes: 0 (servo mode), 1 (closed-loop) or 2 (open-loop)
+    // Mode 3 (stepper mode) is not implemented
+    if(!(mode == 0 || mode == 1)){
+        Err = 1;
+        return -1;
+    }
+    Err = 0;
+    return writeByte(ID, SMS_STS_MODE, mode);	
+}
+
