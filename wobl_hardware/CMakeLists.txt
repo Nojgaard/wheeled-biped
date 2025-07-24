@@ -68,6 +68,9 @@ target_link_libraries(servo_driver SCServo)
 add_executable(servo_test tools/servo_driver_test.cpp)
 target_link_libraries(servo_test servo_driver)
 
+add_executable(servo_set_id tools/servo_set_id.cpp)
+target_link_libraries(servo_set_id servo_driver)
+
 # If your scservo lib builds a library, link it:
 # Example:
 # target_link_libraries(servo_node PUBLIC scservo_lib)
@@ -84,6 +87,7 @@ install(TARGETS
   imu_node
   imu_live_calib
   servo_test
+  servo_set_id
   DESTINATION lib/${PROJECT_NAME}
 )
 
