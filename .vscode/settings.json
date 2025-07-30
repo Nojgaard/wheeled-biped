@@ -10,6 +10,9 @@
     "python.experiments.optOutFrom": [
         "pythonTerminalEnvVarActivation"
     ],
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "./:install/wobl_messages/lib/python3.12/site-packages:${env:PYTHONPATH}"
+    },
     "files.associations": {
         "cctype": "cpp",
         "clocale": "cpp",

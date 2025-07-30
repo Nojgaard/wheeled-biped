@@ -64,6 +64,7 @@ class MujocoBridgeNode(Node):
         imu.linear_acceleration.z = lacc[2]
 
         imu.header.stamp = self.get_clock().now().to_msg()
+        imu.header.frame_id = "imu_link"
         self._publish_imu_state.publish(imu)
 
     def update_sim(self, timestep: TimeStep):

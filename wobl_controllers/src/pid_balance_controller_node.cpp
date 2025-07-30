@@ -26,7 +26,7 @@ public:
     tf2::Quaternion quat(q.x, q.y, q.z, q.w);
     double roll, pitch, yaw;
     tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-    return -pitch;
+    return pitch;
   }
 
   double wheel_velocity(const JointState &joint_state) {

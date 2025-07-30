@@ -16,6 +16,18 @@ def generate_launch_description():
                 executable="pid_balance_controller",
                 name="pid_balance_controller",
                 output="screen",
+            ),
+            Node(
+                package="topic_tools",
+                executable="throttle",
+                name="imu_remote_publisher",
+                arguments=["messages", "imu/data", "20.0", "remote/imu/data"],
+            ),
+            Node(
+                package="foxglove_bridge",
+                executable="foxglove_bridge",
+                name="foxglove_bridge",
+                output="screen",
             )
         ]
     )
