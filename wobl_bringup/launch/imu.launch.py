@@ -13,7 +13,7 @@ def generate_launch_description():
             package='topic_tools',
             executable='throttle',
             name='imu_network',
-            arguments=['messages', 'imu/data', '20.0', 'imu/data_network']
+            arguments=['messages', 'imu/data', '20.0', 'remote/imu/data']
         ),
         Node(
             package="foxglove_bridge",

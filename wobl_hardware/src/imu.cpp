@@ -2,9 +2,9 @@
 #include <math.h>
 #include <wobl_hardware/imu.h>
 
-const double BIAS_LINEAR_ACCELERATION[3] = {-73.0, -184.0, 0.0};
+const double BIAS_LINEAR_ACCELERATION[3] = {-99.0, -185.0, 0.0};
 const double BIAS_ANGULAR_VELOCITY[3] = {0, 0, 0};
-const double BIAS_COMPASS[3] = {15.0, 15.0, 3.0};
+const double BIAS_COMPASS[3] = {16.0, 15.0, 2.0};
 
 IMU::IMU() : icm_("/dev/i2c-1", 0x69) {}
 
