@@ -1,6 +1,9 @@
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
 #include <wobl_hardware/imu.h>
+
+using DiagnosticStatus = diagnostic_msgs::msg::DiagnosticStatus;
 
 void print(const geometry_msgs::msg::Vector3 msg) { std::cout << msg.x << " " << msg.y << " " << msg.z << std::endl; }
 
@@ -24,10 +27,21 @@ public:
                 bias_compass.y, bias_compass.z);
 
     publisher_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
+    diagnostic_pub_ = this->create_publisher<DiagnosticStatus>("imu/status", 10);
+    publish_status();
     timer_ = create_wall_timer(std::chrono::milliseconds(12), std::bind(&IMUNode::publish_imu_data, this));
   }
 
 private:
+  void publish_status() {
+    DiagnosticStatus msg;
+    msg.level = imu_.status() ? DiagnosticStatus::OK : DiagnosticStatus::ERROR;
+    msg.name = "IMU Node";
+    msg.message = imu_.status() ? "IMU is operational" : "IMU initialization failed";
+    msg.hardware_id = "imu_node";
+    diagnostic_pub_->publish(msg);
+  }
+
   geometry_msgs::msg::Vector3 quat_to_euler(const geometry_msgs::msg::Quaternion &q) {
     geometry_msgs::msg::Vector3 euler;
     // roll (x-axis rotation)
@@ -68,6 +82,7 @@ private:
 
   IMU imu_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publisher_;
+  rclcpp::Publisher<DiagnosticStatus>::SharedPtr diagnostic_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 

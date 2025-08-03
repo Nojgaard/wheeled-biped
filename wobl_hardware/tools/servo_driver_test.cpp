@@ -119,7 +119,7 @@ int main() {
 
     for (double target_vel : vel_sequence) {
         std::cout << "Commanding velocity " << target_vel << " rps for 3 seconds\n";
-        driver.write_velocities(ID, target_vel);
+        driver.write_velocity(ID, target_vel);
 
         auto start = std::chrono::steady_clock::now();
         while (true) {

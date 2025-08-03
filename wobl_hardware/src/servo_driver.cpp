@@ -19,7 +19,7 @@ bool ServoDriver::write_position(u8 servo_id, double position_rad, double veloci
   return servo_.WritePosEx(servo_id, position_steps, velocity_steps, acceleration_steps);
 }
 
-bool ServoDriver::write_velocities(u8 servo_id, double velocity_rps, double acceleration_rps2) {
+bool ServoDriver::write_velocity(u8 servo_id, double velocity_rps, double acceleration_rps2) {
   u16 velocity_steps = std::clamp(radians_to_steps(velocity_rps), -MAX_SPEED_, MAX_SPEED_);
   u8 acceleration_steps = std::clamp(radians_to_steps(acceleration_rps2), 0, MAX_ACCELERATION_);
   return servo_.WriteSpe(servo_id, velocity_steps, acceleration_steps);

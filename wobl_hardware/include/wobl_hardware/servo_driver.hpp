@@ -23,7 +23,7 @@ public:
   bool ping(u8 servo_id);
   bool set_mode(u8 servo_id, ServoMode servo_type);
   bool write_position(u8 servo_id, double position_rad, double velocity_rps, double acceleration_rps2 = 0);
-  bool write_velocities(u8 servo_id, double velocity_rps, double acceleration_rps2 = 0);
+  bool write_velocity(u8 servo_id, double velocity_rps, double acceleration_rps2 = 0);
   bool set_midpoint(u8 servo_id);
   bool enable_torque(u8 servo_id, bool is_on);
   bool set_id(u8 servo_id, u8 new_servo_id);

@@ -97,6 +97,7 @@
         "hash_map": "cpp",
         "ranges": "cpp",
         "scoped_allocator": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "alignedvector3": "cpp"
     }
 }
