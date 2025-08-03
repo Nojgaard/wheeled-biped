@@ -71,13 +71,8 @@ target_link_libraries(servo_test servo_driver)
 add_executable(servo_set_id tools/servo_set_id.cpp)
 target_link_libraries(servo_set_id servo_driver)
 
-# If your scservo lib builds a library, link it:
-# Example:
-# target_link_libraries(servo_node PUBLIC scservo_lib)
-
-#ament_target_dependencies(servo_node
-#  rclcpp
-#)
+add_executable(servo_set_midpoint tools/servo_set_midpoint.cpp)
+target_link_libraries(servo_set_midpoint servo_driver)
 
 # ============================
 # Install Targets
@@ -88,6 +83,7 @@ install(TARGETS
   imu_live_calib
   servo_test
   servo_set_id
+  servo_set_midpoint
   DESTINATION lib/${PROJECT_NAME}
 )
 
