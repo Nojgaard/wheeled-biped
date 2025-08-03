@@ -32,18 +32,14 @@ include_directories(include external)
 # IMU Nodes
 # ============================
 
-add_executable(imu_node
-  src/imu_node.cpp
-  src/imu.cpp
-)
+add_library(libimu src/imu.cpp)
+target_link_libraries(libimu ICM20948_Lib)
 
-add_executable(imu_live_calib
-  src/imu_live_calib.cpp
-  src/imu.cpp
-)
+add_executable(imu_node src/imu_node.cpp)
+target_link_libraries(imu_node libimu)
 
-target_link_libraries(imu_node ICM20948_Lib)
-target_link_libraries(imu_live_calib ICM20948_Lib)
+add_executable(imu_live_calib tools/imu_live_calib.cpp)
+target_link_libraries(imu_live_calib libimu)
 
 # Link ROS dependencies once using target dependencies
 ament_target_dependencies(imu_node
@@ -62,17 +58,17 @@ ament_target_dependencies(imu_live_calib
 # Servo Node
 # ============================
 
-add_library(servo_driver src/servo_driver.cpp)
-target_link_libraries(servo_driver SCServo)
+add_library(libservo src/servo_driver.cpp)
+target_link_libraries(libservo SCServo)
 
 add_executable(servo_test tools/servo_driver_test.cpp)
-target_link_libraries(servo_test servo_driver)
+target_link_libraries(servo_test libservo)
 
 add_executable(servo_set_id tools/servo_set_id.cpp)
-target_link_libraries(servo_set_id servo_driver)
+target_link_libraries(servo_set_id libservo)
 
 add_executable(servo_set_midpoint tools/servo_set_midpoint.cpp)
-target_link_libraries(servo_set_midpoint servo_driver)
+target_link_libraries(servo_set_midpoint libservo)
 
 # ============================
 # Install Targets
