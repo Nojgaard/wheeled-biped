@@ -70,6 +70,9 @@ target_link_libraries(servo_set_id libservo)
 add_executable(servo_set_midpoint tools/servo_set_midpoint.cpp)
 target_link_libraries(servo_set_midpoint libservo)
 
+add_executable(servo_ping tools/servo_ping.cpp)
+target_link_libraries(servo_ping libservo)
+
 ament_target_dependencies(servo_node
   rclcpp
   sensor_msgs
@@ -101,6 +104,7 @@ install(TARGETS
   servo_set_id
   servo_set_midpoint
   robot_test
+  servo_ping
   DESTINATION lib/${PROJECT_NAME}
 )
 
