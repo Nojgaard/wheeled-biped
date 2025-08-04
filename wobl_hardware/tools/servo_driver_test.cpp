@@ -77,11 +77,11 @@ int main() {
     std::cout << "=== POSITION MODE TEST ===\n";
     driver.set_mode(ID, ServoDriver::POSITION);
 
-    std::vector<double> pos_sequence{0.0, 1.0, -1.0, 0.0}; // radians
+    std::vector<double> pos_sequence{0.0, 0.1, -0.1, 0.0}; // radians
 
     for (double target : pos_sequence) {
         std::cout << "Moving to position " << target << " rad\n";
-        driver.write_position(ID, target, 1.0);
+        driver.write_position(ID, target, 0.2);
         // Wait until motion completes or error/quit
         while (true) {
             auto st = driver.read_state(ID);
