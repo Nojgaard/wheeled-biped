@@ -27,8 +27,8 @@ public:
 
     cmd_sub_ = this->create_subscription<JointCommand>("joint_commands", 1,
                                                        [this](JointCommand::SharedPtr msg) { cmd_next_ = msg; });
-    enabled_sub_ = this->create_subscription<std_msgs::msg::Bool>("servo/enabled", 1,
-                                                                  [this](std_msgs::msg::Bool::SharedPtr msg) { next_is_enabled_ = msg->data; });
+    enabled_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+        "servo/enabled", 1, [this](std_msgs::msg::Bool::SharedPtr msg) { next_is_enabled_ = msg->data; });
 
     state_pub_ = this->create_publisher<JointState>("joint_states", rclcpp::SensorDataQoS());
     battery_pub_ = this->create_publisher<BatteryState>("battery_state", rclcpp::SensorDataQoS());
@@ -36,6 +36,15 @@ public:
 
     last_battery_pub_time = this->now();
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20), [this]() { loop(); });
+  }
+
+  void enable_servos(bool enable) {
+    for (u8 id : servo_ids_) {
+      if (!driver_.enable_torque(id, enable)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to set torque for servo with ID %d", id);
+      } 
+    }
+    RCLCPP_INFO(this->get_logger(), "Torque %s for all servos", next_is_enabled_ ? "enabled" : "disabled");
   }
 
   bool initialize_driver() {
@@ -57,13 +66,7 @@ public:
     driver_.set_mode(WHEEL_LEFT, ServoDriver::VELOCITY);
     driver_.set_mode(WHEEL_RIGHT, ServoDriver::VELOCITY);
 
-    for (u8 id : servo_ids_) {
-      if (!driver_.enable_torque(id, false)) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to set torque for servo with ID %d", id);
-        return false;
-      }
-      RCLCPP_INFO(this->get_logger(), "Torque disabled for servo with ID %d", id);
-    }
+    enable_servos(false);
 
     cmd_next_ = std::make_shared<JointCommand>();
     cmd_next_->position.resize(4, 0.0);
@@ -87,15 +90,14 @@ public:
   }
 
   void loop() {
+    if (next_is_enabled_ != is_enabled_) {
+      enable_servos(next_is_enabled_);
+      is_enabled_ = next_is_enabled_;
+    }
+
     for (u8 id : servo_ids_) {
       if (!has_pending_command(id)) {
         continue;
-      }
-
-      if (next_is_enabled_ != is_enabled_) {
-        if (!driver_.enable_torque(id, next_is_enabled_)) {
-          RCLCPP_ERROR(this->get_logger(), "Failed to set torque for servo with ID %d", id);
-        }
       }
 
       if (id == HIP_LEFT || id == HIP_RIGHT) {
@@ -104,12 +106,6 @@ public:
         driver_.write_velocity(id, cmd_next_->velocity[id]);
       }
     }
-
-    if (next_is_enabled_ != is_enabled_) {
-      RCLCPP_INFO(this->get_logger(), "Torque %s for all servos", next_is_enabled_ ? "enabled" : "disabled");
-      is_enabled_ = next_is_enabled_;
-    }
-
     cmd_prev_ = cmd_next_;
 
     auto current_time = this->now();
@@ -158,6 +154,7 @@ int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<ServoNode>();
   rclcpp::spin(node);
+  node->enable_servos(false);
   rclcpp::shutdown();
   return 0;
 }
