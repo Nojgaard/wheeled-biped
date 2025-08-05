@@ -32,22 +32,13 @@ void restore_terminal() {
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
-void user_input_thread() {
-  while (true) {
-    char c = getchar();
-    if (c == 'q' || c == 'Q') {
-      user_quit = true;
-      break;
-    }
-  }
-}
-
 bool wait_for_enter_or_quit() {
   std::cout << "Press [Enter] to continue, or 'q' to quit..." << std::endl;
   while (true) {
     if (user_quit)
       return false;
     int c = getchar();
+    std::cout << c << std::endl;
     if (c == '\n')
       return true;
     if (c == 'q' || c == 'Q') {
@@ -61,10 +52,10 @@ class RobotTest : public rclcpp::Node {
 public:
   RobotTest() : Node("robot_test") {
     joint_state_sub_ = this->create_subscription<JointState>(
-        "joint_states", 10, [this](JointState::SharedPtr msg) { last_joint_state_ = *msg; });
+        "joint_states", rclcpp::SensorDataQoS(), [this](JointState::SharedPtr msg) { last_joint_state_ = msg; });
 
     imu_status_sub_ = this->create_subscription<DiagnosticStatus>(
-        "imu/status", 10, [this](DiagnosticStatus::SharedPtr msg) { imu_status_ = *msg; });
+        "imu/status", rclcpp::SensorDataQoS(), [this](DiagnosticStatus::SharedPtr msg) { imu_status_ = *msg; });
 
     servo_status_sub_ = this->create_subscription<DiagnosticStatus>(
         "servo/status", 10, [this](DiagnosticStatus::SharedPtr msg) { servo_status_ = *msg; });
@@ -78,7 +69,8 @@ public:
     std::cout << "Waiting for IMU and Servo node status OK..." << std::endl;
     while (rclcpp::ok() && !user_quit) {
       rclcpp::spin_some(this->get_node_base_interface());
-      if (imu_status_.level == DiagnosticStatus::OK && servo_status_.level == DiagnosticStatus::OK) {
+      if (imu_status_.level == DiagnosticStatus::OK && servo_status_.level == DiagnosticStatus::OK &&
+          last_joint_state_ != nullptr) {
         std::cout << "IMU and Servo nodes are OK." << std::endl;
         break;
       }
@@ -87,6 +79,7 @@ public:
     if (user_quit)
       return;
 
+    enable_servos(true);
     // Print joint states
     std::cout << "Current joint states:" << std::endl;
     for (int i = 0; i < 20 && rclcpp::ok() && !user_quit; ++i) {
@@ -99,10 +92,9 @@ public:
       return;
 
     // Arm and set all servos to 0 position
-    enable_servos(true);
     JointCommand zero_cmd;
     zero_cmd.position = {0.0, 0.0, 0.0, 0.0};
-    zero_cmd.velocity = {0.05, 0.05, 0.0, 0.0};
+    zero_cmd.velocity = {0.1, 0.1, 0.0, 0.0};
     cmd_pub_->publish(zero_cmd);
     std::cout << "All servos set to 0 position." << std::endl;
 
@@ -163,13 +155,13 @@ public:
 
   void print_joint_states() {
     std::cout << "Positions: ";
-    for (auto p : last_joint_state_.position)
+    for (auto p : last_joint_state_->position)
       std::cout << p << " ";
     std::cout << "| Velocities: ";
-    for (auto v : last_joint_state_.velocity)
+    for (auto v : last_joint_state_->velocity)
       std::cout << v << " ";
     std::cout << "| Efforts: ";
-    for (auto e : last_joint_state_.effort)
+    for (auto e : last_joint_state_->effort)
       std::cout << e << " ";
     std::cout << std::endl;
   }
@@ -180,7 +172,7 @@ private:
   rclcpp::Subscription<DiagnosticStatus>::SharedPtr servo_status_sub_;
   rclcpp::Publisher<JointCommand>::SharedPtr cmd_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr servo_enabled_pub_;
-  JointState last_joint_state_;
+  JointState::SharedPtr last_joint_state_;
   DiagnosticStatus imu_status_;
   DiagnosticStatus servo_status_;
 };
@@ -188,13 +180,11 @@ private:
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   setup_terminal();
-  std::thread input_thread(user_input_thread);
 
   auto node = std::make_shared<RobotTest>();
   node->run();
 
   restore_terminal();
   rclcpp::shutdown();
-  input_thread.join();
   return 0;
 }

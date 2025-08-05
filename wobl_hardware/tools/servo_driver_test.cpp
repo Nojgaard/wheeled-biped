@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
   std::vector<double> pos_sequence{0.0, 0.1, -0.1, 0.0}; // radians
 
   for (double target : pos_sequence) {
+    break;
     std::cout << "Moving to position " << target << " rad\n";
     driver.write_position(ID, target, 0.2);
     // Wait until motion completes or error/quit
@@ -119,7 +120,7 @@ int main(int argc, char *argv[]) {
   std::cout << "=== VELOCITY MODE TEST ===\n";
   driver.set_mode(ID, ServoDriver::VELOCITY);
 
-  std::vector<double> vel_sequence{1.0, -1.0, 0.5, 0.0}; // rps
+  std::vector<double> vel_sequence{2.0, 1.0, -1.0, 1.0}; // rps
 
   for (double target_vel : vel_sequence) {
     std::cout << "Commanding velocity " << target_vel << " rps for 3 seconds\n";

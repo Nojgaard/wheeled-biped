@@ -23,6 +23,10 @@ enum JointToId {
 class ServoNode : public rclcpp::Node {
 public:
   ServoNode() : Node("servo_node") {
+    servo_state_pub_ = this->create_publisher<JointState>("joint_states", rclcpp::SensorDataQoS());
+    battery_pub_ = this->create_publisher<BatteryState>("battery_state", rclcpp::SensorDataQoS());
+    diagnostic_pub_ = this->create_publisher<DiagnosticStatus>("servo/status", 10);
+
     if (!initialize_driver())
       return;
 
@@ -31,11 +35,7 @@ public:
     servo_enabled_sub_ = this->create_subscription<Bool>(
         "servo/enabled", 1, [this](Bool::SharedPtr msg) { this->enable_servos(msg->data); });
 
-    servo_state_pub_ = this->create_publisher<JointState>("joint_states", rclcpp::SensorDataQoS());
-    battery_pub_ = this->create_publisher<BatteryState>("battery_state", rclcpp::SensorDataQoS());
-    diagnostic_pub_ = this->create_publisher<DiagnosticStatus>("servo/status", 10);
-
-    last_battery_pub_time = this->now();
+    last_battery_pub_time_ = this->now();
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20), [this]() { loop(); });
   }
 
@@ -87,8 +87,8 @@ public:
     return true;
   }
 
-  bool has_pending_command(u8 id) {
-    return cmd_next_->position[id] != cmd_cur_->position[id] || cmd_next_->velocity[id] != cmd_cur_->velocity[id];
+  bool has_pending_command(long idx) {
+    return cmd_next_->position[idx] != cmd_cur_->position[idx] || cmd_next_->velocity[idx] != cmd_cur_->velocity[idx];
   }
 
   void loop() {
@@ -98,15 +98,16 @@ public:
 
 private:
   void write_commands() {
-    for (u8 id : servo_ids_) {
-      if (!has_pending_command(id)) {
+    for (size_t i = 0; i < servo_ids_.size(); ++i) {
+      if (!has_pending_command(i)) {
         continue;
       }
-
+      u8 id = servo_ids_[i];
+      float mirror_scalar = (id == HIP_RIGHT || id == WHEEL_RIGHT) ? 1.0f : -1.0f;
       if (id == HIP_LEFT || id == HIP_RIGHT) {
-        driver_.write_position(id, cmd_next_->position[id], cmd_next_->velocity[id]);
+        driver_.write_position(id, mirror_scalar * cmd_next_->position[i], cmd_next_->velocity[i]);
       } else if (id == WHEEL_LEFT || id == WHEEL_RIGHT) {
-        driver_.write_velocity(id, cmd_next_->velocity[id]);
+        driver_.write_velocity(id, mirror_scalar * cmd_next_->velocity[i], 200.0);
       }
     }
     cmd_cur_ = cmd_next_;
@@ -122,27 +123,26 @@ private:
     state_msg.effort.resize(4);
 
     BatteryState battery_msg;
-    for (u8 id : servo_ids_) {
-      auto servo_state = driver_.read_state(id);
-      state_msg.position[id] = servo_state.position_rad;
-      state_msg.velocity[id] = servo_state.velocity_rps;
-      state_msg.effort[id] = servo_state.current_amps;
+    for (size_t i = 0; i < servo_ids_.size(); ++i) {
+      auto servo_state = driver_.read_state(servo_ids_[i]);
+      state_msg.position[i] = servo_state.position_rad;
+      state_msg.velocity[i] = servo_state.velocity_rps;
+      state_msg.effort[i] = servo_state.current_amps;
       battery_msg.voltage = servo_state.voltage_volts;
     }
 
-    if ((current_time - last_battery_pub_time).seconds() >= 1.0) {
+    if ((current_time - last_battery_pub_time_).seconds() >= 1.0) {
       battery_pub_->publish(battery_msg);
-      rclcpp::Time last_battery_pub_time = current_time;
+      last_battery_pub_time_ = current_time;
     }
-
     servo_state_pub_->publish(state_msg);
   }
 
   ServoDriver driver_;
-  std::vector<uint8_t> servo_ids_ = {HIP_LEFT, HIP_RIGHT, WHEEL_LEFT, WHEEL_RIGHT};
+  const std::vector<uint8_t> servo_ids_ = {HIP_LEFT, HIP_RIGHT, WHEEL_LEFT, WHEEL_RIGHT};
   bool is_torque_enabled_;
 
-  rclcpp::Time last_battery_pub_time;
+  rclcpp::Time last_battery_pub_time_;
   JointCommand::SharedPtr cmd_next_;
   JointCommand::SharedPtr cmd_cur_;
 
