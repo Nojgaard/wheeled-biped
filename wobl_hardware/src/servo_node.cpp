@@ -11,12 +11,13 @@ using BatteryState = wobl_messages::msg::BatteryState;
 using JointState = sensor_msgs::msg::JointState;
 using JointCommand = wobl_messages::msg::JointCommand;
 using DiagnosticStatus = diagnostic_msgs::msg::DiagnosticStatus;
+using Bool = std_msgs::msg::Bool;
 
 enum JointToId {
   HIP_LEFT = 0,
-  HIP_RIGHT = 1,
+  HIP_RIGHT = 5,
   WHEEL_LEFT = 2,
-  WHEEL_RIGHT = 3,
+  WHEEL_RIGHT = 6,
 };
 
 class ServoNode : public rclcpp::Node {
@@ -25,12 +26,12 @@ public:
     if (!initialize_driver())
       return;
 
-    cmd_sub_ = this->create_subscription<JointCommand>("joint_commands", 1,
-                                                       [this](JointCommand::SharedPtr msg) { cmd_next_ = msg; });
-    enabled_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-        "servo/enabled", 1, [this](std_msgs::msg::Bool::SharedPtr msg) { next_is_enabled_ = msg->data; });
+    servo_cmd_sub_ = this->create_subscription<JointCommand>("joint_commands", 1,
+                                                             [this](JointCommand::SharedPtr msg) { cmd_next_ = msg; });
+    servo_enabled_sub_ = this->create_subscription<Bool>(
+        "servo/enabled", 1, [this](Bool::SharedPtr msg) { this->enable_servos(msg->data); });
 
-    state_pub_ = this->create_publisher<JointState>("joint_states", rclcpp::SensorDataQoS());
+    servo_state_pub_ = this->create_publisher<JointState>("joint_states", rclcpp::SensorDataQoS());
     battery_pub_ = this->create_publisher<BatteryState>("battery_state", rclcpp::SensorDataQoS());
     diagnostic_pub_ = this->create_publisher<DiagnosticStatus>("servo/status", 10);
 
@@ -42,9 +43,10 @@ public:
     for (u8 id : servo_ids_) {
       if (!driver_.enable_torque(id, enable)) {
         RCLCPP_ERROR(this->get_logger(), "Failed to set torque for servo with ID %d", id);
-      } 
+      }
     }
-    RCLCPP_INFO(this->get_logger(), "Torque %s for all servos", next_is_enabled_ ? "enabled" : "disabled");
+    RCLCPP_INFO(this->get_logger(), "Torque %s for all servos", enable ? "enabled" : "disabled");
+    is_torque_enabled_ = enable;
   }
 
   bool initialize_driver() {
@@ -69,10 +71,10 @@ public:
     enable_servos(false);
 
     cmd_next_ = std::make_shared<JointCommand>();
-    cmd_next_->position.resize(4, 0.0);
+    cmd_next_->position.resize(4, 100.0);
     cmd_next_->velocity.resize(4, 0.0);
 
-    cmd_prev_ = cmd_next_;
+    cmd_cur_ = cmd_next_;
 
     RCLCPP_INFO(this->get_logger(), "Servo driver initialized successfully.");
 
@@ -86,15 +88,16 @@ public:
   }
 
   bool has_pending_command(u8 id) {
-    return cmd_next_->position[id] != cmd_prev_->position[id] || cmd_next_->velocity[id] != cmd_prev_->velocity[id];
+    return cmd_next_->position[id] != cmd_cur_->position[id] || cmd_next_->velocity[id] != cmd_cur_->velocity[id];
   }
 
   void loop() {
-    if (next_is_enabled_ != is_enabled_) {
-      enable_servos(next_is_enabled_);
-      is_enabled_ = next_is_enabled_;
-    }
+    write_commands();
+    publish_state();
+  }
 
+private:
+  void write_commands() {
     for (u8 id : servo_ids_) {
       if (!has_pending_command(id)) {
         continue;
@@ -106,8 +109,10 @@ public:
         driver_.write_velocity(id, cmd_next_->velocity[id]);
       }
     }
-    cmd_prev_ = cmd_next_;
+    cmd_cur_ = cmd_next_;
+  }
 
+  void publish_state() {
     auto current_time = this->now();
     JointState state_msg;
     state_msg.header.stamp = current_time;
@@ -130,21 +135,20 @@ public:
       rclcpp::Time last_battery_pub_time = current_time;
     }
 
-    state_pub_->publish(state_msg);
+    servo_state_pub_->publish(state_msg);
   }
 
-private:
   ServoDriver driver_;
   std::vector<uint8_t> servo_ids_ = {HIP_LEFT, HIP_RIGHT, WHEEL_LEFT, WHEEL_RIGHT};
-  bool is_enabled_, next_is_enabled_;
+  bool is_torque_enabled_;
 
   rclcpp::Time last_battery_pub_time;
   JointCommand::SharedPtr cmd_next_;
-  JointCommand::SharedPtr cmd_prev_;
+  JointCommand::SharedPtr cmd_cur_;
 
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr enabled_sub_;
-  rclcpp::Subscription<JointCommand>::SharedPtr cmd_sub_;
-  rclcpp::Publisher<JointState>::SharedPtr state_pub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr servo_enabled_sub_;
+  rclcpp::Subscription<JointCommand>::SharedPtr servo_cmd_sub_;
+  rclcpp::Publisher<JointState>::SharedPtr servo_state_pub_;
   rclcpp::Publisher<BatteryState>::SharedPtr battery_pub_;
   rclcpp::Publisher<DiagnosticStatus>::SharedPtr diagnostic_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
