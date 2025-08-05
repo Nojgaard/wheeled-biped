@@ -114,15 +114,15 @@ public:
       if (user_quit)
         break;
       JointCommand cmd = zero_cmd;
-      cmd.position[id] = -0.5;
+      cmd.position[id] = 0.1;
       cmd_pub_->publish(cmd);
-      std::cout << "Moved hip " << id << " back." << std::endl;
+      std::cout << "Moved hip " << id << " up." << std::endl;
       if (!wait_for_enter_or_quit())
         break;
 
-      cmd.position[id] = 0.5;
+      cmd.position[id] = -0.1;
       cmd_pub_->publish(cmd);
-      std::cout << "Moved hip " << id << " forward." << std::endl;
+      std::cout << "Moved hip " << id << " down." << std::endl;
       if (!wait_for_enter_or_quit())
         break;
 
