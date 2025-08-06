@@ -42,7 +42,7 @@ public:
 
     wobl_messages::msg::JointCommand cmd_joint;
     cmd_joint.position = {0, 0, 0, 0};
-    cmd_joint.velocity = {0, 0, cmd_velocity, cmd_velocity};
+    cmd_joint.velocity = {1.0, 1.0, cmd_velocity, cmd_velocity};
     return cmd_joint;
   }
 
@@ -67,7 +67,7 @@ public:
   }
 
 private:
-  bool is_joint_state_ready() { return !joint_state_.name.empty(); }
+  bool is_joint_state_ready() { return !joint_state_.position.empty(); }
   bool is_imu_ready() { return imu_.header.stamp.sec != 0 || imu_.header.stamp.nanosec != 0; }
 
   void update() {

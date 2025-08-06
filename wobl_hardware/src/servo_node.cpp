@@ -105,9 +105,9 @@ private:
       u8 id = servo_ids_[i];
       float mirror_scalar = (id == HIP_RIGHT || id == WHEEL_RIGHT) ? 1.0f : -1.0f;
       if (id == HIP_LEFT || id == HIP_RIGHT) {
-        driver_.write_position(id, mirror_scalar * cmd_next_->position[i], cmd_next_->velocity[i]);
+        driver_.write_position(id, mirror_scalar * cmd_next_->position[i], cmd_next_->velocity[i], 0.2);
       } else if (id == WHEEL_LEFT || id == WHEEL_RIGHT) {
-        driver_.write_velocity(id, mirror_scalar * cmd_next_->velocity[i], 200.0);
+        driver_.write_velocity(id, mirror_scalar * cmd_next_->velocity[i]);
       }
     }
     cmd_cur_ = cmd_next_;
