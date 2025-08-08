@@ -46,6 +46,7 @@ class Application:
         )
         #self._env.physics.data.qpos[:] = 0
         self._env.physics.data.qvel[:] = 0
+        self._env.physics.data.ctrl[:] = 0
         self._env.physics.forward()
 
         return dm_env.TimeStep(

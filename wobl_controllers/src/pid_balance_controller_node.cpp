@@ -13,7 +13,6 @@ using JointCommand = wobl_messages::msg::JointCommand;
 class PidBalanceController {
 public:
   PidBalanceController() {
-    control_toolbox::AntiWindupStrategy aws;
     aws.type = control_toolbox::AntiWindupStrategy::CONDITIONAL_INTEGRATION;
     aws.i_min = -0.05;
     aws.i_max = 0.05;
@@ -46,8 +45,13 @@ public:
     return cmd_joint;
   }
 
+  void set_vel_gains(double kp, double ki, double kd) { pid_velocity.set_gains(kp, ki, kd, 0.17, -0.17, aws); }
+
+  void set_pitch_gains(double kp, double ki, double kd) { pid_pitch.set_gains(kp, ki, kd, 10, -10, aws); }
+
 private:
   double velocity_;
+  control_toolbox::AntiWindupStrategy aws;
   control_toolbox::Pid pid_pitch;
   control_toolbox::Pid pid_velocity;
 };
@@ -55,6 +59,13 @@ private:
 class PidBalanceControllerNode : public rclcpp::Node {
 public:
   PidBalanceControllerNode() : Node("pid_balance_controller") {
+    declare_parameter("pitch_kp", 40.0);
+    declare_parameter("pitch_ki", 0.0);
+    declare_parameter("pitch_kd", 5.0);
+
+    declare_parameter("vel_kp", 0.5);
+    declare_parameter("vel_ki", 0.1);
+    declare_parameter("vel_kd", 0.0);
     joint_state_subscriber_ = this->create_subscription<JointState>(
         "joint_states", rclcpp::SensorDataQoS(), [this](const JointState &msg) { joint_state_ = msg; });
 
@@ -63,6 +74,7 @@ public:
 
     command_publisher_ = this->create_publisher<JointCommand>("joint_commands", 1);
     last_time_ = this->now();
+    last_update_param_time_ = this->now();
     timer_ = create_wall_timer(std::chrono::milliseconds(20), std::bind(&PidBalanceControllerNode::update, this));
   }
 
@@ -81,12 +93,20 @@ private:
     if (dt.seconds() < 0)
       return;
 
+    if (current_time - last_update_param_time_ > rclcpp::Duration::from_seconds(1.0)) {
+      controller.set_pitch_gains(get_parameter("pitch_kp").as_double(), get_parameter("pitch_ki").as_double(),
+                                 get_parameter("pitch_kd").as_double());
+
+      controller.set_vel_gains(get_parameter("vel_kp").as_double(), get_parameter("vel_ki").as_double(),
+                               get_parameter("vel_kd").as_double());
+    }
+
     JointCommand cmd_joint = controller.update(joint_state_, imu_, dt);
     command_publisher_->publish(cmd_joint);
   }
 
   PidBalanceController controller;
-  rclcpp::Time last_time_;
+  rclcpp::Time last_time_, last_update_param_time_;
 
   JointState joint_state_;
   Imu imu_;

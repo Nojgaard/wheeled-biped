@@ -70,7 +70,7 @@ def main():
             task.control_timestep, orientation, velocity, 
         )
 
-        return np.array([0.0, 0.0, lvel, rvel])
+        return np.array([0.5, 0.5, lvel, rvel])
 
     app = Application(task, policy)
     app.launch()

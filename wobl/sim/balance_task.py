@@ -3,6 +3,8 @@ from wobl.sim.robot import Robot
 from dm_control.locomotion.arenas import Floor
 from dm_control.mujoco import Physics
 import numpy as np
+from dm_control.composer.variation import distributions
+from dm_control.composer.variation import noises
 
 class BalanceTask(Task):
     def __init__(self, robot: Robot):
@@ -18,6 +20,8 @@ class BalanceTask(Task):
         self.robot.observables.joint_efforts.enabled = True
 
         self.robot.observables.orientation.enabled = True
+        self.robot.observables.orientation.corruptor = noises.Additive(distributions.Normal(scale=0.001))
+        self.robot.observables.orientation.delay = 1
         self.robot.observables.angular_velocity.enabled = True
         self.robot.observables.linear_acceleration.enabled = True
 
