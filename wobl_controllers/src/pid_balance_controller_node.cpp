@@ -93,12 +93,13 @@ private:
     if (dt.seconds() < 0)
       return;
 
-    if (current_time - last_update_param_time_ > rclcpp::Duration::from_seconds(1.0)) {
+    if (current_time - last_update_param_time_ > rclcpp::Duration::from_seconds(3.0)) {
       controller.set_pitch_gains(get_parameter("pitch_kp").as_double(), get_parameter("pitch_ki").as_double(),
                                  get_parameter("pitch_kd").as_double());
 
       controller.set_vel_gains(get_parameter("vel_kp").as_double(), get_parameter("vel_ki").as_double(),
                                get_parameter("vel_kd").as_double());
+      last_update_param_time_ = current_time;
     }
 
     JointCommand cmd_joint = controller.update(joint_state_, imu_, dt);
