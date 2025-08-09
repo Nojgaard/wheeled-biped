@@ -124,9 +124,11 @@ private:
 
     BatteryState battery_msg;
     for (size_t i = 0; i < servo_ids_.size(); ++i) {
+      u8 id = servo_ids_[i];
+      float mirror_scalar = (id == HIP_RIGHT || id == WHEEL_RIGHT) ? 1.0f : -1.0f;
       auto servo_state = driver_.read_state(servo_ids_[i]);
-      state_msg.position[i] = servo_state.position_rad;
-      state_msg.velocity[i] = servo_state.velocity_rps;
+      state_msg.position[i] = mirror_scalar * servo_state.position_rad;
+      state_msg.velocity[i] = mirror_scalar * servo_state.velocity_rps;
       state_msg.effort[i] = servo_state.current_amps;
       battery_msg.voltage = servo_state.voltage_volts;
     }
