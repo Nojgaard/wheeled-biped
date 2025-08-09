@@ -20,7 +20,6 @@ include_directories(include)
 
 # Define the plugin
 add_executable(pid_balance_controller src/pid_balance_controller_node.cpp)
-add_executable(pid_stationary_controller src/pid_stationary_controller_node.cpp)
 
 ament_target_dependencies(pid_balance_controller
   rclcpp
@@ -29,16 +28,8 @@ ament_target_dependencies(pid_balance_controller
   wobl_messages
 )
 
-ament_target_dependencies(pid_stationary_controller
-  rclcpp
-  sensor_msgs
-  control_toolbox
-  wobl_messages
-)
-
 install(TARGETS
   pid_balance_controller
-  pid_stationary_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 
