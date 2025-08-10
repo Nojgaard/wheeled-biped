@@ -17,8 +17,8 @@ public:
     aws.i_min = -0.05;
     aws.i_max = 0.05;
 
-    pid_pitch.initialize(40.0, 0.0, 5.0, 10, -10, aws);
-    pid_velocity.initialize(0.5, 0.1, 0.0, 0.17, -0.17, aws);
+    pid_pitch.initialize(200.0, 0.0, 5.0, 10, -10, aws);
+    pid_velocity.initialize(0.1, 0.1, 0.0, 0.17, -0.17, aws);
   }
 
   double extract_pitch(const geometry_msgs::msg::Quaternion &q) {
@@ -37,7 +37,7 @@ public:
     auto pitch = extract_pitch(imu.orientation);
 
     double cmd_pitch = pid_velocity.compute_command(-velocity_, dt);
-    double cmd_velocity = pid_pitch.compute_command(pitch - cmd_pitch, dt);
+    double cmd_velocity = pid_pitch.compute_command(pitch - cmd_pitch - 0.035, dt);
 
     wobl_messages::msg::JointCommand cmd_joint;
     cmd_joint.position = {0, 0, 0, 0};
@@ -59,11 +59,11 @@ private:
 class PidBalanceControllerNode : public rclcpp::Node {
 public:
   PidBalanceControllerNode() : Node("pid_balance_controller") {
-    declare_parameter("pitch_kp", 40.0);
+    declare_parameter("pitch_kp", 200.0);
     declare_parameter("pitch_ki", 0.0);
     declare_parameter("pitch_kd", 5.0);
 
-    declare_parameter("vel_kp", 0.5);
+    declare_parameter("vel_kp", 0.1);
     declare_parameter("vel_ki", 0.1);
     declare_parameter("vel_kd", 0.0);
     joint_state_subscriber_ = this->create_subscription<JointState>(
