@@ -38,7 +38,7 @@ private:
 
   int radians_to_steps(double radians) const;
 
-  int baudrate_ = 115200;
+  int baudrate_ = 1000000; // 1M baudrate
   std::string port_ = "/dev/ttyAMA0";
 
   const int STEPS_PER_REVOLUTION_ = 4096;
