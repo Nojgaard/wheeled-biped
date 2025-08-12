@@ -45,6 +45,9 @@ class MujocoBridgeNode(Node):
         self._publish_joint_state.publish(joint_state)
 
     def publish_imu(self, timestep: TimeStep):
+        if np.linalg.norm(timestep.observation["robot/orientation"]) == 0:
+            return
+
         imu = Imu()
 
         q = timestep.observation["robot/orientation"]
