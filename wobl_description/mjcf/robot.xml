@@ -39,25 +39,25 @@
         <body name="body" quat="0.7071 0 0 0.7071">
             <site name="ImuSensor" pos="0 0 0" euler="0 0 -1.57079633"/>
             <geom mesh="back_cap" mass="0.015" />
-            <geom mesh="back" mass="0.02" />
-            <geom mesh="mounting_plate" mass="0.16" />
-            <geom mesh="shell" mass="0.122" />
+            <geom mesh="back" mass="0.034" />
+            <geom mesh="mounting_plate" mass="0.15" />
+            <!--<geom mesh="shell" mass="0.122" />-->
             <geom mesh="battery" mass="0.37" />
-            <geom type="box" size="0.028 0.042 0.005" pos="0 -0.0265 0.04579" mass="0.05" />
+            <geom type="box" size="0.028 0.042 0.005" pos="0 -0.0265 0.04579" mass="0.08" />
 
             <body name="R_leg" pos="-0.0654 0 0">
-                <geom mesh="R_hip" mass="0.035" />
-                <geom mesh="R_hip_servo" mass="0.06" />
+                <geom mesh="R_hip" mass="0.045" />
+                <geom mesh="R_hip_servo" mass="0.063" />
                 <body name="R_thigh">
-                    <joint name="R_hip" pos="-0.0177 -0.000008 0.000007" />
-                    <geom mesh="R_thigh" mass="0.04" />
+                    <joint name="R_hip" pos="-0.0177 -0.000008 0.000007"   />
+                    <geom mesh="R_thigh" mass="0.055" />
                     <body name="R_shin">
                         <joint name="R_shin" pos="-0.0177 0.068524 -0.096679" />
-                        <geom mesh="R_shin" mass="0.06" />
-                        <geom mesh="R_shin_servo" mass="0.06" />
+                        <geom mesh="R_shin" mass="0.067" />
+                        <geom mesh="R_shin_servo" mass="0.063" />
                         <body name="R_link">
                             <joint name="R_link" pos="-0.0177 0.086545 -0.071455" />
-                            <geom mesh="R_link" mass="0.03" />
+                            <geom mesh="R_link" mass="0.047" />
                         </body>
                         <body name="R_foot">
                             <joint name="R_foot" pos="-0.0177 -0.000838 -0.193474" />
@@ -69,18 +69,18 @@
             </body>
 
             <body name="L_leg" pos="0.0654 0 0">
-                <geom mesh="L_hip" mass="0.035" />
-                <geom mesh="L_hip_servo" mass="0.06" />
+                <geom mesh="L_hip" mass="0.045" />
+                <geom mesh="L_hip_servo" mass="0.063" />
                 <body name="L_thigh">
                     <joint name="L_hip" pos="-0.0177 -0.000008 0.000007" />
-                    <geom mesh="L_thigh" mass="0.04" />
+                    <geom mesh="L_thigh" mass="0.055" />
                     <body name="L_shin">
                         <joint name="L_shin" pos="-0.0177 0.068524 -0.096679" />
-                        <geom mesh="L_shin" mass="0.06" />
-                        <geom mesh="L_shin_servo" mass="0.06" />
+                        <geom mesh="L_shin" mass="0.067" />
+                        <geom mesh="L_shin_servo" mass="0.063" />
                         <body name="L_link">
                             <joint name="L_link" pos="-0.0177 0.086545 -0.071455" />
-                            <geom mesh="L_link" mass="0.03" />
+                            <geom mesh="L_link" mass="0.047" />
                         </body>
                         <body name="L_foot">
                             <joint name="L_foot" pos="-0.0177 -0.000838 -0.193474" />
