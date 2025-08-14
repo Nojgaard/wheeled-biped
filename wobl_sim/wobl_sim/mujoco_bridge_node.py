@@ -9,7 +9,7 @@ from wobl_sim.application import Application
 from wobl_sim.balance_task import BalanceTask
 from wobl_sim.robot import Robot
 
-from wobl_messages.msg import JointCommand
+from wobl_msgs.msg import JointCommand
 from sensor_msgs.msg import Imu, JointState
 
 

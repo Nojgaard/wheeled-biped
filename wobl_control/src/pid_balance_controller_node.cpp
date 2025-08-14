@@ -4,11 +4,11 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <wobl_messages/msg/joint_command.hpp>
+#include <wobl_msgs/msg/joint_command.hpp>
 
 using JointState = sensor_msgs::msg::JointState;
 using Imu = sensor_msgs::msg::Imu;
-using JointCommand = wobl_messages::msg::JointCommand;
+using JointCommand = wobl_msgs::msg::JointCommand;
 
 class PidBalanceController {
 public:
@@ -39,7 +39,7 @@ public:
     double cmd_pitch = pid_velocity.compute_command(-velocity_, dt);
     double cmd_velocity = pid_pitch.compute_command(pitch - cmd_pitch - 0.035, dt);
 
-    wobl_messages::msg::JointCommand cmd_joint;
+    wobl_msgs::msg::JointCommand cmd_joint;
     cmd_joint.position = {0, 0, 0, 0};
     cmd_joint.velocity = {1.0, 1.0, cmd_velocity, cmd_velocity};
     return cmd_joint;

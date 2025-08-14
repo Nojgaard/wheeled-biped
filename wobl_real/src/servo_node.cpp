@@ -4,12 +4,12 @@
 #include <std_msgs/msg/bool.hpp>
 #include <vector>
 #include <wobl_real/servo_driver.hpp>
-#include <wobl_messages/msg/battery_state.hpp>
-#include <wobl_messages/msg/joint_command.hpp>
+#include <wobl_msgs/msg/battery_state.hpp>
+#include <wobl_msgs/msg/joint_command.hpp>
 
-using BatteryState = wobl_messages::msg::BatteryState;
+using BatteryState = wobl_msgs::msg::BatteryState;
 using JointState = sensor_msgs::msg::JointState;
-using JointCommand = wobl_messages::msg::JointCommand;
+using JointCommand = wobl_msgs::msg::JointCommand;
 using DiagnosticStatus = diagnostic_msgs::msg::DiagnosticStatus;
 using Bool = std_msgs::msg::Bool;
 

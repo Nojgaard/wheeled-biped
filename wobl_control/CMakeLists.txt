@@ -13,7 +13,7 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
-find_package(wobl_messages REQUIRED)
+find_package(wobl_msgs REQUIRED)
 
 # Include dirs
 include_directories(include)
@@ -25,7 +25,7 @@ ament_target_dependencies(pid_balance_controller
   rclcpp
   sensor_msgs
   control_toolbox
-  wobl_messages
+  wobl_msgs
 )
 
 install(TARGETS

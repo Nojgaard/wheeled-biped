@@ -25,7 +25,7 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
-find_package(wobl_messages REQUIRED)
+find_package(wobl_msgs REQUIRED)
 
 include_directories(include external)
 
@@ -78,7 +78,7 @@ ament_target_dependencies(servo_node
   sensor_msgs
   geometry_msgs
   diagnostic_msgs
-  wobl_messages
+  wobl_msgs
 )
 
 add_executable(robot_test tools/robot_test.cpp)
@@ -88,7 +88,7 @@ ament_target_dependencies(robot_test
   sensor_msgs
   geometry_msgs
   diagnostic_msgs
-  wobl_messages
+  wobl_msgs
 )
 
 

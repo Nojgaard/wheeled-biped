@@ -8,11 +8,11 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
-#include <wobl_messages/msg/joint_command.hpp>
+#include <wobl_msgs/msg/joint_command.hpp>
 
 using JointState = sensor_msgs::msg::JointState;
 using DiagnosticStatus = diagnostic_msgs::msg::DiagnosticStatus;
-using JointCommand = wobl_messages::msg::JointCommand;
+using JointCommand = wobl_msgs::msg::JointCommand;
 
 enum JointToId { HIP_LEFT = 0, HIP_RIGHT = 1, WHEEL_LEFT = 2, WHEEL_RIGHT = 3 };
 
