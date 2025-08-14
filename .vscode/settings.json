@@ -11,7 +11,7 @@
         "pythonTerminalEnvVarActivation"
     ],
     "terminal.integrated.env.linux": {
-        "PYTHONPATH": "./:install/wobl_messages/lib/python3.12/site-packages:${env:PYTHONPATH}"
+        "PYTHONPATH": ".:wobl_sim:install/wobl_messages/lib/python3.12/site-packages:${env:PYTHONPATH}"
     },
     "files.associations": {
         "cctype": "cpp",

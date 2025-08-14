@@ -5,9 +5,9 @@ import rclpy
 from dm_env import TimeStep
 from rclpy.node import Node
 
-from wobl.sim.application import Application
-from wobl.sim.balance_task import BalanceTask
-from wobl.sim.robot import Robot
+from wobl_sim.application import Application
+from wobl_sim.balance_task import BalanceTask
+from wobl_sim.robot import Robot
 
 from wobl_messages.msg import JointCommand
 from sensor_msgs.msg import Imu, JointState
@@ -19,7 +19,7 @@ class MujocoBridgeNode(Node):
 
         self._action = np.zeros(4)
 
-        self._robot = Robot(assets_dir="wobl_description/mjcf")
+        self._robot = Robot()
         self._task = BalanceTask(self._robot)
         self._app = Application(self._task, self.update_sim)
         self._thread = threading.Thread(target=self._app.launch, daemon=True)

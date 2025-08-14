@@ -1,25 +1,9 @@
+import numpy as np
 from dm_control.composer import Task
-from wobl.sim.robot import Robot
 from dm_control.locomotion.arenas import Floor
 from dm_control.mujoco import Physics
-import numpy as np
-from dm_control.composer.variation import distributions
-from dm_control.composer.variation import noises
-from dm_control.composer.variation import variation_values
 
-
-class UnitVector:
-    """Adds noise via variation, then re-normalizes the vector."""
-
-    def __init__(self, noise_variation, eps=1e-8):
-        self._variation = noise_variation
-        self._eps = eps
-
-    def __call__(self, initial_value=None, current_value=None, random_state=None):
-        noise = variation_values.evaluate(
-            self._variation, initial_value, current_value, random_state
-        )
-        return noise / np.linalg.norm(noise)
+from wobl_sim.robot import Robot
 
 
 class BalanceTask(Task):
@@ -36,7 +20,6 @@ class BalanceTask(Task):
         self.robot.observables.joint_efforts.enabled = True
 
         self.robot.observables.orientation.enabled = True
-        #self.robot.observables.orientation.corruptor = noises.Additive(distributions.Normal(scale=0.0005))
         self.robot.observables.orientation.delay = 1
         self.robot.observables.angular_velocity.enabled = True
         self.robot.observables.linear_acceleration.enabled = True

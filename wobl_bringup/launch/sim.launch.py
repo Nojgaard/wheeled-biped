@@ -6,9 +6,9 @@ def generate_launch_description():
     return LaunchDescription(
         [
             Node(
-                package="mujoco_bridge",
-                executable="mujoco_bridge",
-                name="mujoco_bridge",
+                package="wobl_sim",
+                executable="mujoco_bridge_node",
+                name="mujoco_bridge_node",
                 output="screen",
             ),
             Node(

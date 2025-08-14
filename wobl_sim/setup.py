@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'mujoco_bridge'
+package_name = 'wobl_sim'
 
 setup(
     name=package_name,
@@ -13,14 +13,13 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='nnoej',
+    maintainer='Nikolai Nojgaard',
     maintainer_email='nnoej10@gmail.com',
     description='TODO: Package description',
-    license='MIT',
-    tests_require=['pytest'],
+    license='TODO: License declaration',
     entry_points={
         'console_scripts': [
-            'mujoco_bridge = mujoco_bridge.mujoco_bridge_node:main'
+            'mujoco_bridge_node = wobl_sim.mujoco_bridge_node:main'
         ],
     },
 )

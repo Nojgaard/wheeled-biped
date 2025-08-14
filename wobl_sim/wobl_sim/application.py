@@ -1,14 +1,13 @@
+import time
 from enum import Enum
 from typing import Callable
-from dm_control.composer import Environment
-from dm_control.composer import Task
+
+import dm_env
+import mujoco.viewer
+import numpy.typing as npt
+from dm_control.composer import Environment, Task
 from dm_control.mujoco import Physics
 from dm_env import TimeStep
-import time
-import mujoco.viewer
-import numpy as np
-import numpy.typing as npt
-import dm_env
 
 
 class State(Enum):
@@ -38,15 +37,13 @@ class Application:
                 self._env.physics.forward()
 
     def _restart(self):
+        self._env.physics.reset()
         self._env._hooks.initialize_episode(
             self._env._physics_proxy, self._env._random_state
         )
         self._env._observation_updater.reset(
             self._env._physics_proxy, self._env._random_state
         )
-        #self._env.physics.data.qpos[:] = 0
-        self._env.physics.data.qvel[:] = 0
-        self._env.physics.data.ctrl[:] = 0
         self._env.physics.forward()
 
         return dm_env.TimeStep(
@@ -67,6 +64,7 @@ class Application:
 
     def launch(self):
         physics: Physics = self._env.physics
+
         with mujoco.viewer.launch_passive(
             physics.model.ptr, physics.data.ptr, key_callback=self._key_callback
         ) as viewer:
@@ -79,3 +77,15 @@ class Application:
                 if time_until_next_step > 0:
                     time.sleep(time_until_next_step)
         self._env.close()
+
+
+if __name__ == "__main__":
+    import numpy as np
+
+    from wobl_sim.balance_task import BalanceTask
+    from wobl_sim.robot import Robot
+
+    robot = Robot()
+    task = BalanceTask(robot)
+    app = Application(task, lambda timestep: np.zeros(4))
+    app.launch()
