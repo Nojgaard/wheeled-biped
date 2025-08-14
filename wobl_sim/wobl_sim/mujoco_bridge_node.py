@@ -15,7 +15,7 @@ from sensor_msgs.msg import Imu, JointState
 
 class MujocoBridgeNode(Node):
     def __init__(self):
-        super().__init__("mujoco_bridge")
+        super().__init__("mujoco_bridge_node")
 
         self._action = np.zeros(4)
 

@@ -6,7 +6,7 @@ from dm_control.composer.observation import observable
 
 
 class Robot(Entity):
-    def __init__(self, assets_dir="wobl_description/mjcf"):
+    def __init__(self, assets_dir="wobl_sim/mjcf"):
         self._model_path = os.path.join(assets_dir, "robot.xml")
         super().__init__()
 
