@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <math.h>
-#include <wobl_hardware/servo_driver.hpp>
+#include <wobl_real/servo_driver.hpp>
 bool ServoDriver::initialize() { return servo_.begin(baudrate_, port_.c_str()); }
 
 ServoDriver::~ServoDriver() { servo_.end(); }

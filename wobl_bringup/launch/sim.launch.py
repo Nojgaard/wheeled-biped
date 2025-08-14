@@ -12,7 +12,7 @@ def generate_launch_description():
                 output="screen",
             ),
             Node(
-                package="wobl_controllers",
+                package="wobl_control",
                 executable="pid_balance_controller",
                 name="pid_balance_controller",
                 output="screen",

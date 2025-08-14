@@ -1,6 +1,6 @@
 #include <fstream>
 #include <math.h>
-#include <wobl_hardware/imu.h>
+#include <wobl_real/imu.h>
 
 const double BIAS_LINEAR_ACCELERATION[3] = {-99.0, -185.0, 0.0};
 const double BIAS_ANGULAR_VELOCITY[3] = {0, 0, 0};

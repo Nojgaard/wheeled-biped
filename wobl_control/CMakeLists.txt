@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(wobl_controllers)
+project(wobl_control)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

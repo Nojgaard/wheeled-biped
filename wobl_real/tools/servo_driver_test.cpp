@@ -6,7 +6,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <vector>
-#include <wobl_hardware/servo_driver.hpp>
+#include <wobl_real/servo_driver.hpp>
 
 static struct termios orig_termios;
 

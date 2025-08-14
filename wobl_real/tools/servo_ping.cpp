@@ -1,5 +1,5 @@
 #include <iostream>
-#include <wobl_hardware/servo_driver.hpp>
+#include <wobl_real/servo_driver.hpp>
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {

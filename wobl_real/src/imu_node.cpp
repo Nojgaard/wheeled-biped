@@ -1,7 +1,7 @@
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
-#include <wobl_hardware/imu.h>
+#include <wobl_real/imu.h>
 
 using DiagnosticStatus = diagnostic_msgs::msg::DiagnosticStatus;
 

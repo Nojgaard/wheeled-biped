@@ -3,7 +3,7 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <vector>
-#include <wobl_hardware/servo_driver.hpp>
+#include <wobl_real/servo_driver.hpp>
 #include <wobl_messages/msg/battery_state.hpp>
 #include <wobl_messages/msg/joint_command.hpp>
 

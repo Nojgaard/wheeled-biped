@@ -5,7 +5,7 @@ def generate_launch_description():
     return LaunchDescription([
         # IMU Publisher Node (replace with your actual IMU driver)
         Node(
-            package='wobl_hardware',
+            package='wobl_real',
             executable='imu_node',
             name='imu_publisher',
         ),
