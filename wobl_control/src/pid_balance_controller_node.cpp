@@ -5,10 +5,12 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <wobl_msgs/msg/joint_command.hpp>
+#include <wobl_msgs/msg/topics.hpp>
 
 using JointState = sensor_msgs::msg::JointState;
 using Imu = sensor_msgs::msg::Imu;
 using JointCommand = wobl_msgs::msg::JointCommand;
+using Topics = wobl_msgs::msg::Topics;
 
 class PidBalanceController {
 public:
@@ -67,12 +69,12 @@ public:
     declare_parameter("vel_ki", 0.1);
     declare_parameter("vel_kd", 0.0);
     joint_state_subscriber_ = this->create_subscription<JointState>(
-        "joint_states", rclcpp::SensorDataQoS(), [this](const JointState &msg) { joint_state_ = msg; });
+        Topics::JOINT_STATE, rclcpp::SensorDataQoS(), [this](const JointState &msg) { joint_state_ = msg; });
 
     imu_subscriber_ =
-        this->create_subscription<Imu>("imu/data", rclcpp::SensorDataQoS(), [this](const Imu &msg) { imu_ = msg; });
+        this->create_subscription<Imu>(Topics::IMU, rclcpp::SensorDataQoS(), [this](const Imu &msg) { imu_ = msg; });
 
-    command_publisher_ = this->create_publisher<JointCommand>("joint_commands", 1);
+    command_publisher_ = this->create_publisher<JointCommand>(Topics::JOINT_COMMAND, 1);
     last_time_ = this->now();
     last_update_param_time_ = this->now();
     timer_ = create_wall_timer(std::chrono::milliseconds(20), std::bind(&PidBalanceControllerNode::update, this));

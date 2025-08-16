@@ -6,7 +6,9 @@
 #include <wobl_real/servo_driver.hpp>
 #include <wobl_msgs/msg/battery_state.hpp>
 #include <wobl_msgs/msg/joint_command.hpp>
+#include <wobl_msgs/msg/topics.hpp>
 
+using Topics = wobl_msgs::msg::Topics;
 using BatteryState = wobl_msgs::msg::BatteryState;
 using JointState = sensor_msgs::msg::JointState;
 using JointCommand = wobl_msgs::msg::JointCommand;
@@ -23,14 +25,14 @@ enum JointToId {
 class ServoNode : public rclcpp::Node {
 public:
   ServoNode() : Node("servo_node") {
-    servo_state_pub_ = this->create_publisher<JointState>("joint_states", rclcpp::SensorDataQoS());
-    battery_pub_ = this->create_publisher<BatteryState>("battery_state", rclcpp::SensorDataQoS());
-    diagnostic_pub_ = this->create_publisher<DiagnosticStatus>("servo/status", 10);
+    servo_state_pub_ = this->create_publisher<JointState>(Topics::JOINT_STATE, rclcpp::SensorDataQoS());
+    battery_pub_ = this->create_publisher<BatteryState>(Topics::BATTERY, rclcpp::SensorDataQoS());
+    diagnostic_pub_ = this->create_publisher<DiagnosticStatus>(Topics::JOINT_STATUS, 10);
 
     if (!initialize_driver())
       return;
 
-    servo_cmd_sub_ = this->create_subscription<JointCommand>("joint_commands", 1,
+    servo_cmd_sub_ = this->create_subscription<JointCommand>(Topics::JOINT_COMMAND, 1,
                                                              [this](JointCommand::SharedPtr msg) { cmd_next_ = msg; });
     servo_enabled_sub_ = this->create_subscription<Bool>(
         "servo/enabled", 1, [this](Bool::SharedPtr msg) { this->enable_servos(msg->data); });

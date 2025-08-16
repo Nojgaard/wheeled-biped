@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from wobl_msgs.msg import Topics
 
 def generate_launch_description():
     return LaunchDescription([
@@ -13,7 +14,7 @@ def generate_launch_description():
             package='topic_tools',
             executable='throttle',
             name='imu_network',
-            arguments=['messages', 'imu/data', '20.0', 'remote/imu/data']
+            arguments=['messages', Topics.IMU, '20.0', Topics.IMU_REMOTE],
         ),
         Node(
             package="foxglove_bridge",

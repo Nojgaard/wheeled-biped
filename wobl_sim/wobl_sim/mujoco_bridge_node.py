@@ -11,6 +11,14 @@ from wobl_sim.robot import Robot
 
 from wobl_msgs.msg import JointCommand
 from sensor_msgs.msg import Imu, JointState
+from wobl_msgs.msg import Topics
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
+
+sensor_qos = QoSProfile(
+    reliability=QoSReliabilityPolicy.BEST_EFFORT,
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=5
+)
 
 
 class MujocoBridgeNode(Node):
@@ -26,11 +34,13 @@ class MujocoBridgeNode(Node):
         self._thread.start()
 
         self.subscriber = self.create_subscription(
-            JointCommand, "joint_commands", self.command_callback, 1
+            JointCommand, Topics.JOINT_COMMAND, self.command_callback, 1
         )
 
-        self._publish_imu_state = self.create_publisher(Imu, "imu/data", 1)
-        self._publish_joint_state = self.create_publisher(JointState, "joint_states", 1)
+        print(Topics.JOINT_COMMAND, Topics.JOINT_COMMAND_REMOTE)
+
+        self._publish_imu_state = self.create_publisher(Imu, Topics.IMU, sensor_qos)
+        self._publish_joint_state = self.create_publisher(JointState, Topics.JOINT_STATE, sensor_qos)
 
     def command_callback(self, msg: JointCommand):
         self._action[:2] = msg.position[:2]

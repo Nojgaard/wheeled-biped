@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from wobl_msgs.msg import Topics
 
 
 def generate_launch_description():
@@ -27,19 +28,19 @@ def generate_launch_description():
                 package="topic_tools",
                 executable="throttle",
                 name="imu_remote_publisher",
-                arguments=["messages", "imu/data", "20.0", "remote/imu/data"],
+                arguments=["messages", Topics.IMU, "20.0", Topics.IMU_REMOTE],
             ),
             Node(
                 package="topic_tools",
                 executable="throttle",
                 name="joint_state_remote_publisher",
-                arguments=["messages", "joint_states", "20.0", "remote/joint_states"],
+                arguments=["messages", Topics.JOINT_STATE, "20.0", Topics.JOINT_STATE_REMOTE],
             ),
             Node(
                 package="topic_tools",
                 executable="throttle",
                 name="joint_command_remote_publisher",
-                arguments=["messages", "joint_commands", "20.0", "remote/joint_commands"],
+                arguments=["messages", Topics.JOINT_COMMAND, "20.0", Topics.JOINT_COMMAND_REMOTE],
             ),
             Node(
                 package="foxglove_bridge",

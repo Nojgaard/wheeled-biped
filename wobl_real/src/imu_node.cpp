@@ -2,7 +2,9 @@
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
 #include <wobl_real/imu.h>
+#include <wobl_msgs/msg/topics.hpp>
 
+using Topics = wobl_msgs::msg::Topics;
 using DiagnosticStatus = diagnostic_msgs::msg::DiagnosticStatus;
 
 void print(const geometry_msgs::msg::Vector3 msg) { std::cout << msg.x << " " << msg.y << " " << msg.z << std::endl; }
@@ -26,8 +28,8 @@ public:
                 bias_accel.x, bias_accel.y, bias_accel.z, bias_gyro.x, bias_gyro.y, bias_gyro.z, bias_compass.x,
                 bias_compass.y, bias_compass.z);
 
-    publisher_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
-    diagnostic_pub_ = this->create_publisher<DiagnosticStatus>("imu/status", 10);
+    publisher_ = this->create_publisher<sensor_msgs::msg::Imu>(Topics::IMU, rclcpp::SensorDataQoS());
+    diagnostic_pub_ = this->create_publisher<DiagnosticStatus>(Topics::IMU_STATUS, 10);
     publish_status();
     timer_ = create_wall_timer(std::chrono::milliseconds(12), std::bind(&IMUNode::publish_imu_data, this));
   }
