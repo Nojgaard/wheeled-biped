@@ -105,6 +105,7 @@ private:
     }
 
     JointCommand cmd_joint = controller.update(joint_state_, imu_, dt);
+    cmd_joint.header.stamp = current_time;
     command_publisher_->publish(cmd_joint);
   }
 

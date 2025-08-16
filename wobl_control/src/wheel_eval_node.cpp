@@ -33,6 +33,7 @@ public:
       if (!rclcpp::ok())
         break;
       cmd.velocity = {0.0, 0.0, command_values_[i], command_values_[i]};
+      cmd.header.stamp = this->now();
       joint_command_pub_->publish(cmd);
       RCLCPP_INFO(get_logger(), "Published command: %f", command_values_[i]);
       std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(durations_[i] * 1000)));
