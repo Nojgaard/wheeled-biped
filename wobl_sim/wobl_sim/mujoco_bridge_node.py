@@ -103,10 +103,7 @@ def main(args=None):
     rclpy.init(args=args)
     node = MujocoBridgeNode()
     rclpy.spin(node)
-
-    if rclpy.ok():
-        node.destroy_node()
-        rclpy.shutdown()
+    rclpy.shutdown()
 
 
 if __name__ == "__main__":
