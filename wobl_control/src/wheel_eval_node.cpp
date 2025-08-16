@@ -32,7 +32,7 @@ public:
     for (size_t i = 0; i < command_values_.size(); ++i) {
       if (!rclcpp::ok())
         break;
-      cmd.velocity = {0.0, 0.0, command_values_[i], command_values_[i]};
+      cmd.velocity = {1.0, 1.0, command_values_[i], command_values_[i]};
       cmd.header.stamp = this->now();
       joint_command_pub_->publish(cmd);
       RCLCPP_INFO(get_logger(), "Published command: %f", command_values_[i]);

@@ -26,4 +26,4 @@ AMENT_IGNORE
 
 MUJOCO_LOG.TXT
 
-rosbag2*
+rosbag2*/
