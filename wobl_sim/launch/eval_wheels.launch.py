@@ -11,37 +11,47 @@ def generate_launch_description():
             "ros2", "bag", "record",
             "--topics",
             Topics.JOINT_COMMAND,
-            Topics.JOINT_STATE
+            Topics.JOINT_STATE,
+            "-o", "data/bag_sim_wheel",
         ],
         output="screen"
     )
 
-    # Nodes to bring up after rosbag is running
-    bringup_nodes = [
-        Node(
-            package="wobl_sim",
-            executable="mujoco_bridge_node",
-            name="mujoco_bridge_node",
-            output="screen",
-            parameters=[{"eval_mode": True}],
-        ),
-        Node(
-            package="wobl_control",
-            executable="wheel_eval_node",
-            name="wheel_eval",
-            output="screen",
-        ),
-    ]
+    # Start mujoco_bridge_node immediately after rosbag starts
+    bridge_node = Node(
+        package="wobl_sim",
+        executable="mujoco_bridge_node",
+        name="mujoco_bridge_node",
+        output="screen",
+        parameters=[{"eval_mode": True}],
+    )
 
-    # Start bringup nodes only after rosbag is running (with a short delay)
-    bringup_event = RegisterEventHandler(
+    # Start wheel_eval_node after a delay (after bridge_node is up)
+    wheel_eval_node = Node(
+        package="wobl_control",
+        executable="wheel_eval_node",
+        name="wheel_eval",
+        output="screen",
+    )
+
+    # Event: Start bridge_node when rosbag_record starts
+    bridge_event = RegisterEventHandler(
         OnProcessStart(
             target_action=rosbag_record,
-            on_start=[TimerAction(period=2.0, actions=bringup_nodes)]
+            on_start=[bridge_node]
+        )
+    )
+
+    # Event: Start wheel_eval_node after a delay (after bridge_node starts)
+    eval_event = RegisterEventHandler(
+        OnProcessStart(
+            target_action=bridge_node,
+            on_start=[TimerAction(period=8.0, actions=[wheel_eval_node])]
         )
     )
 
     return LaunchDescription([
         rosbag_record,
-        bringup_event
+        bridge_event,
+        eval_event
     ])

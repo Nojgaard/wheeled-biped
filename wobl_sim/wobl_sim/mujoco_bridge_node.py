@@ -56,6 +56,7 @@ class MujocoBridgeNode(Node):
     def publish_joints(self, timestep: TimeStep):
         joint_state = JointState()
         joint_state.name = self._robot.joint_names
+        joint_state.header.stamp = self.get_clock().now().to_msg()
         joint_state.position = timestep.observation["robot/joint_positions"]
         joint_state.velocity = timestep.observation["robot/joint_velocities"]
         joint_state.effort = timestep.observation["robot/joint_efforts"]

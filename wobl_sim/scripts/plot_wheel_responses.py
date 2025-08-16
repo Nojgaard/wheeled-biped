@@ -1,13 +1,23 @@
-from mcap.reader import make_reader
-import numpy as np
-import matplotlib.pyplot as plt
+import os
+import plotly.express as px
 from wobl_msgs.msg import Topics
 import rosbag2_py
 from rclpy.serialization import deserialize_message
 from rosidl_runtime_py.utilities import get_message
 
 
-def read_messages(input_bag: str):
+import webbrowser
+
+
+class PrintUrl:
+    def open(self, url, *args, **kwargs):
+        print(url)
+
+
+webbrowser.register("print", PrintUrl)
+
+
+def read_messages(input_bag: str, topic_names=None):
     reader = rosbag2_py.SequentialReader()
     reader.open(
         rosbag2_py.StorageOptions(uri=input_bag, storage_id="mcap"),
@@ -26,25 +36,11 @@ def read_messages(input_bag: str):
 
     while reader.has_next():
         topic, data, timestamp = reader.read_next()
-        msg_type = get_message(typename(topic))
-        msg = deserialize_message(data, msg_type)
-        yield topic, msg, timestamp
+        if topic_names is None or topic in topic_names:
+            msg_type = get_message(typename(topic))
+            msg = deserialize_message(data, msg_type)
+            yield topic, msg, timestamp
     del reader
-
-
-def compare_joint_states(real_data, sim_data):
-    # Example: align by timestamp, plot velocity or position
-    # You may need to interpolate or align timestamps
-    # This is a simplified example
-    real_times = [t for t, _ in real_data]
-    real_vels = [msg.velocity for _, msg in real_data]
-    sim_times = [t for t, _ in sim_data]
-    sim_vels = [msg.velocity for _, msg in sim_data]
-
-    plt.plot(real_times, [v[2] for v in real_vels], label="Real Left Wheel")
-    plt.plot(sim_times, [v[2] for v in sim_vels], label="Sim Left Wheel")
-    plt.legend()
-    plt.show()
 
 
 def normalize_timestamps(data):
@@ -53,20 +49,57 @@ def normalize_timestamps(data):
     t0 = data[0][0]
     return [((t - t0) / 1e9, msg) for t, msg in data]
 
+
+def find_first_mcap_file(directory: str) -> str:
+    """
+    Returns the path to the first .mcap file found in the given directory.
+    Raises FileNotFoundError if none found.
+    """
+    for entry in os.listdir(directory):
+        if entry.endswith(".mcap"):
+            return os.path.join(directory, entry)
+    raise FileNotFoundError(f"No .mcap file found in {directory}")
+
+
+def stamp_to_seconds(stamp) -> float:
+    return stamp.sec + stamp.nanosec * 1e-9
+
+
+def collect_msgs(name, mcap_path):
+    msgs = [(name, topic, msg) for topic, msg, t in read_messages(mcap_path)]
+    # Find the index of the first JOINT_COMMAND message
+    first_cmd_idx = next(
+        (i for i, (_, topic, _) in enumerate(msgs) if topic == Topics.JOINT_COMMAND)
+    )
+    msgs = msgs[first_cmd_idx:]
+    t0 = stamp_to_seconds(msgs[0][2].header.stamp)
+    for _, _, msg in msgs:
+        msg.header.stamp = stamp_to_seconds(msg.header.stamp) - t0
+    return msgs
+
+
+def plot_wheel_comparison(msgs, wheed_idx, title):
+    names, topics, messages = zip(*msgs)
+    stamps = [msg.header.stamp for msg in messages]
+    velocities = [msg.velocity[wheed_idx] for msg in messages]
+    fig = px.line(
+        x=stamps,
+        y=velocities,
+        labels={"x": "Time [s]", "y": "Velocity [rad/s]"},
+        title=title,
+        markers=True,
+        color=names,
+        line_dash=topics,
+    )
+    fig.show(renderer="browser", using="print")
+
+
 if __name__ == "__main__":
-    real_mcap = "rosbag2_test/rosbag2_test.mcap"
-    sim_mcap = "rosbag2_test/rosbag2_test.mcap"
-    topic = Topics.JOINT_STATE
-    real_data = [
-        (t, msg)
-        for topic, msg, t in read_messages(real_mcap)
-        if topic == Topics.JOINT_STATE
-    ]
-    real_data = normalize_timestamps(real_data)
-    sim_data = [
-        (t, msg)
-        for topic, msg, t in read_messages(sim_mcap)
-        if topic == Topics.JOINT_STATE
-    ]
-    sim_data = normalize_timestamps(sim_data)
-    compare_joint_states(real_data, sim_data)
+    real_mcap = find_first_mcap_file("data/bag_real_wheel_acc_0")
+    sim_mcap = find_first_mcap_file("data/bag_sim_wheel")
+
+    msgs = collect_msgs("real", real_mcap)
+    msgs += collect_msgs("sim", sim_mcap)
+
+    plot_wheel_comparison(msgs, 2, "Left Wheel: JointState & JointCommand Comparison")
+    # plot_wheel_comparison(msgs, 3, "Right Wheel: JointState & JointCommand Comparison")
