@@ -17,18 +17,23 @@ from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 sensor_qos = QoSProfile(
     reliability=QoSReliabilityPolicy.BEST_EFFORT,
     history=QoSHistoryPolicy.KEEP_LAST,
-    depth=5
+    depth=5,
 )
 
 
 class MujocoBridgeNode(Node):
     def __init__(self):
-        super().__init__("mujoco_bridge_node")
+        super().__init__("mujoco_bridge")
+
+        self.declare_parameter("eval_mode", False)
 
         self._action = np.zeros(4)
 
         self._robot = Robot()
-        self._task = BalanceTask(self._robot)
+        self._task = BalanceTask(
+            self._robot,
+            self.get_parameter("eval_mode").get_parameter_value().bool_value,
+        )
         self._app = Application(self._task, self.update_sim)
         self._thread = threading.Thread(target=self._app.launch, daemon=True)
         self._thread.start()
@@ -40,7 +45,9 @@ class MujocoBridgeNode(Node):
         print(Topics.JOINT_COMMAND, Topics.JOINT_COMMAND_REMOTE)
 
         self._publish_imu_state = self.create_publisher(Imu, Topics.IMU, sensor_qos)
-        self._publish_joint_state = self.create_publisher(JointState, Topics.JOINT_STATE, sensor_qos)
+        self._publish_joint_state = self.create_publisher(
+            JointState, Topics.JOINT_STATE, sensor_qos
+        )
 
     def command_callback(self, msg: JointCommand):
         self._action[:2] = msg.position[:2]
@@ -65,13 +72,13 @@ class MujocoBridgeNode(Node):
         imu.orientation.x = q[1]
         imu.orientation.y = q[2]
         imu.orientation.z = q[3]
-        
+
         avel = timestep.observation["robot/angular_velocity"]
         imu.angular_velocity.x = avel[0]
         imu.angular_velocity.y = avel[1]
         imu.angular_velocity.z = avel[2]
 
-        lacc = timestep.observation["robot/linear_acceleration"] 
+        lacc = timestep.observation["robot/linear_acceleration"]
         imu.linear_acceleration.x = lacc[0]
         imu.linear_acceleration.y = lacc[1]
         imu.linear_acceleration.z = lacc[2]

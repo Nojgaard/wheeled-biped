@@ -30,8 +30,13 @@ add_executable(pid_balance_controller src/pid_balance_controller_node.cpp)
 target_include_directories(pid_balance_controller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(pid_balance_controller PRIVATE ${WOBL_DEPS})
 
+add_executable(wheel_eval_node src/wheel_eval_node.cpp)
+target_include_directories(wheel_eval_node PRIVATE include)
+target_link_libraries(wheel_eval_node PRIVATE ${WOBL_DEPS})
+
 install(TARGETS
   pid_balance_controller
+  wheel_eval_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

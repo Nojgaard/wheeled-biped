@@ -7,12 +7,15 @@ from wobl_sim.robot import Robot
 
 
 class BalanceTask(Task):
-    def __init__(self, robot: Robot):
+    def __init__(self, robot: Robot, static_entity=False):
         super().__init__()
 
         self.robot = robot
         self._arena = Floor(reflectance=0.0)
-        self._arena.add_free_entity(self.robot)
+        if static_entity:
+            self._arena.attach(self.robot)
+        else:
+            self._arena.add_free_entity(self.robot)
         self.set_timesteps(control_timestep=0.01, physics_timestep=0.005)
 
         self.robot.observables.joint_positions.enabled = True
