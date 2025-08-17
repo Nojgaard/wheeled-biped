@@ -18,7 +18,7 @@ def generate_launch_description():
         cmd=[
             'ros2', 'topic', 'pub', '--once',
             '/joint_command', 'wobl_msgs/msg/JointCommand',
-            '{position: [0.0, 0.0, 0.0, 0.0], velocity: [0.0, 0.0, 0.0, 0.0]}'
+            '{position: [0.0, 0.0, 0.0, 0.0], velocity: [1.0, 1.0, 0.0, 0.0]}'
         ],
         output='screen'
     )
@@ -41,6 +41,6 @@ def generate_launch_description():
             name='servo_node',
         ),
         TimerAction(period=2.0, actions=[enable_servos_pub]),
-        TimerAction(period=1.0, actions=[joint_command_pub]),
-        TimerAction(period=1.0, actions=[rosbag_record])
+        TimerAction(period=2.0, actions=[joint_command_pub]),
+        TimerAction(period=4.0, actions=[rosbag_record])
     ])
