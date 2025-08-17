@@ -31,7 +31,7 @@ public:
     publisher_ = this->create_publisher<sensor_msgs::msg::Imu>(Topics::IMU, rclcpp::SensorDataQoS());
     diagnostic_pub_ = this->create_publisher<DiagnosticStatus>(Topics::IMU_STATUS, 10);
     publish_status();
-    timer_ = create_wall_timer(std::chrono::milliseconds(7), std::bind(&IMUNode::publish_imu_data, this));
+    timer_ = create_wall_timer(std::chrono::milliseconds(5), std::bind(&IMUNode::publish_imu_data, this));
   }
 
 private:

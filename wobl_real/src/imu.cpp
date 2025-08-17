@@ -40,9 +40,9 @@ void IMU::initialize() {
   // Setting value can be calculated as follows:
   // Value = (DMP running rate / ODR ) - 1
   // E.g. For a 5Hz ODR rate when DMP is running at 55Hz, value = (55/5) - 1 = 10.
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Quat9, 2) == ICM_20948_Stat_Ok);
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Accel, 2) == ICM_20948_Stat_Ok);
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 2) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Quat9, 1) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Accel, 1) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 1) == ICM_20948_Stat_Ok);
   // status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, 1) == ICM_20948_Stat_Ok); // Set to the maximum
 
   status_ &= (icm_.enableFIFO() == ICM_20948_Stat_Ok);
