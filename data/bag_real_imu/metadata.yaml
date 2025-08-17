@@ -2,10 +2,10 @@ rosbag2_bagfile_information:
   version: 9
   storage_identifier: mcap
   duration:
-    nanoseconds: 28096881824
+    nanoseconds: 30556956669
   starting_time:
-    nanoseconds_since_epoch: 1755461205853994169
-  message_count: 2670
+    nanoseconds_since_epoch: 1755465403278697429
+  message_count: 2925
   topics_with_message_count:
     - topic_metadata:
         name: /imu/data
@@ -28,7 +28,7 @@ rosbag2_bagfile_information:
               nsec: 854775807
             avoid_ros_namespace_conventions: false
         type_description_hash: RIHS01_7d9a00ff131080897a5ec7e26e315954b8eae3353c3f995c55faf71574000b5b
-      message_count: 2670
+      message_count: 2925
   compression_format: ""
   compression_mode: ""
   relative_file_paths:
@@ -36,9 +36,9 @@ rosbag2_bagfile_information:
   files:
     - path: bag_real_imu_0.mcap
       starting_time:
-        nanoseconds_since_epoch: 1755461205853994169
+        nanoseconds_since_epoch: 1755465403278697429
       duration:
-        nanoseconds: 28096881824
-      message_count: 2670
+        nanoseconds: 30556956669
+      message_count: 2925
   custom_data: ~
   ros_distro: jazzy
