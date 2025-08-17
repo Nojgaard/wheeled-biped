@@ -20,7 +20,8 @@ include(FetchContent)
 FetchContent_Declare(
   icm20948
   GIT_REPOSITORY https://github.com/makkhudjakov/SparkFun_ICM-20948_RaspberryLibrary.git
-  GIT_TAG main
+  #GIT_TAG main
+  GIT_TAG 807f55b4b79a45bc064839fb67a0ffb3bb6e3377
 )
 FetchContent_MakeAvailable(icm20948)
 add_subdirectory(external/scservo)

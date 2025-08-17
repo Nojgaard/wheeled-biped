@@ -2,9 +2,13 @@
 #include <math.h>
 #include <wobl_real/imu.h>
 
-const double BIAS_LINEAR_ACCELERATION[3] = {-99.0, -185.0, 0.0};
-const double BIAS_ANGULAR_VELOCITY[3] = {0, 0, 0};
-const double BIAS_COMPASS[3] = {16.0, 15.0, 2.0};
+/*const int32_t BIAS_LINEAR_ACCELERATION[3] = {-99 * 4096, -185 * 4096, 0 * 4096};
+const int32_t BIAS_ANGULAR_VELOCITY[3] = {0, 0, 0};
+const int32_t BIAS_COMPASS[3] = {16 * 65536, 15 * 65536, 2 * 65536};*/
+
+const int32_t BIAS_LINEAR_ACCELERATION[3] = {-330752, -826368, 585728};
+const int32_t BIAS_ANGULAR_VELOCITY[3] = {-17440, 1344, 12768};
+const int32_t BIAS_COMPASS[3] = {-230400,  static_cast<int32_t>(2.47907e+06),  static_cast<int32_t>(-3.26298e+06)};
 
 IMU::IMU() : icm_("/dev/i2c-1", 0x69) {}
 
@@ -127,30 +131,42 @@ bool IMU::status() const { return status_; }
 double IMU::accuracy() const { return accuracy_; }
 
 geometry_msgs::msg::Vector3 IMU::bias_linear_acceleration() {
+  int32_t x, y ,z;
   geometry_msgs::msg::Vector3 bias;
-  status_ &= (icm_.getBias(ICM_20948::Bias::AccelX, &bias.x) == ICM_20948_Stat_Ok);
-  status_ &= (icm_.getBias(ICM_20948::Bias::AccelY, &bias.y) == ICM_20948_Stat_Ok);
-  status_ &= (icm_.getBias(ICM_20948::Bias::AccelZ, &bias.z) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.getBias(ICM_20948::Bias::AccelX, &x) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.getBias(ICM_20948::Bias::AccelY, &y) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.getBias(ICM_20948::Bias::AccelZ, &z) == ICM_20948_Stat_Ok);
+  bias.x = x;
+  bias.y = y;
+  bias.z = z;
   return bias;
 }
 
 geometry_msgs::msg::Vector3 IMU::bias_angular_velocity() {
+  int32_t x, y ,z;
   geometry_msgs::msg::Vector3 bias;
-  icm_.getBias(ICM_20948::Bias::GyroX, &bias.x);
-  icm_.getBias(ICM_20948::Bias::GyroY, &bias.y);
-  icm_.getBias(ICM_20948::Bias::GyroZ, &bias.z);
+  icm_.getBias(ICM_20948::Bias::GyroX, &x);
+  icm_.getBias(ICM_20948::Bias::GyroY, &y);
+  icm_.getBias(ICM_20948::Bias::GyroZ, &z);
+  bias.x = x;
+  bias.y = y;
+  bias.z = z;
   return bias;
 }
 
 geometry_msgs::msg::Vector3 IMU::bias_compass() {
+  int32_t x, y ,z;
   geometry_msgs::msg::Vector3 bias;
-  icm_.getBias(ICM_20948::Bias::MagX, &bias.x);
-  icm_.getBias(ICM_20948::Bias::MagY, &bias.y);
-  icm_.getBias(ICM_20948::Bias::MagZ, &bias.z);
+  icm_.getBias(ICM_20948::Bias::MagX, &x);
+  icm_.getBias(ICM_20948::Bias::MagY, &y);
+  icm_.getBias(ICM_20948::Bias::MagZ, &z);
+  bias.x = x;
+  bias.y = y;
+  bias.z = z;
   return bias;
 }
 
-void IMU::try_load_bias() {  
+void IMU::try_load_bias() {
   icm_.setBias(ICM_20948::Bias::AccelX, BIAS_LINEAR_ACCELERATION[0]);
   icm_.setBias(ICM_20948::Bias::AccelY, BIAS_LINEAR_ACCELERATION[1]);
   icm_.setBias(ICM_20948::Bias::AccelZ, BIAS_LINEAR_ACCELERATION[2]);

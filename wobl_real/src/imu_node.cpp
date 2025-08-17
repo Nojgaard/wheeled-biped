@@ -66,7 +66,7 @@ private:
 
   void debug_print_imu_data(const sensor_msgs::msg::Imu &msg) {
     auto rpy = quat_to_euler(msg.orientation);
-    RCLCPP_DEBUG(this->get_logger(),
+    RCLCPP_INFO(this->get_logger(),
                  "Orientation: [%.2f %.2f %.2f]  "
                  "Gyro: [%.2f %.2f %.2f]  "
                  "Accel: [%.2f %.2f %.2f]",
@@ -81,6 +81,7 @@ private:
     imu_msg_.header.stamp = this->now();
     imu_msg_.header.frame_id = "imu_link";
     publisher_->publish(imu_msg_);
+    // debug_print_imu_data(imu_msg_);
   }
 
   IMU imu_;
