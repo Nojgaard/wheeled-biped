@@ -46,7 +46,7 @@ def generate_launch_description():
     eval_event = RegisterEventHandler(
         OnProcessStart(
             target_action=bridge_node,
-            on_start=[TimerAction(period=8.0, actions=[wheel_eval_node])]
+            on_start=[TimerAction(period=3.0, actions=[wheel_eval_node])]
         )
     )
 

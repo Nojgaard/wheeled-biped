@@ -12,6 +12,7 @@ from wobl_sim.robot import Robot
 from wobl_msgs.msg import JointCommand
 from sensor_msgs.msg import Imu, JointState
 from wobl_msgs.msg import Topics
+from builtin_interfaces.msg import Time
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 
 sensor_qos = QoSProfile(
@@ -34,6 +35,8 @@ class MujocoBridgeNode(Node):
             self._robot,
             self.get_parameter("eval_mode").get_parameter_value().bool_value,
         )
+        self._control_timestep = 0.01
+        self._sim_time = 0.0
         self._app = Application(self._task, self.update_sim)
         self._thread = threading.Thread(target=self._app.launch, daemon=True)
         self._thread.start()
@@ -48,6 +51,13 @@ class MujocoBridgeNode(Node):
         self._publish_joint_state = self.create_publisher(
             JointState, Topics.JOINT_STATE, sensor_qos
         )
+
+    def sim_stamp(self) -> Time:
+        """Get the current simulation time as a ROS Time message."""
+        stamp = Time()
+        stamp.sec = int(self._sim_time)
+        stamp.nanosec = int((self._sim_time - stamp.sec) * 1e9)
+        return stamp
 
     def command_callback(self, msg: JointCommand):
         self._action[:2] = msg.position[:2]
@@ -91,6 +101,7 @@ class MujocoBridgeNode(Node):
     def update_sim(self, timestep: TimeStep):
         self.publish_imu(timestep)
         self.publish_joints(timestep)
+        self._sim_time += self._control_timestep
         return self._action
 
     def shutdown(self):

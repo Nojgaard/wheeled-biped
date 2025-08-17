@@ -2,10 +2,10 @@ rosbag2_bagfile_information:
   version: 9
   storage_identifier: mcap
   duration:
-    nanoseconds: 38566480252
+    nanoseconds: 30639009759
   starting_time:
-    nanoseconds_since_epoch: 1755382690683190114
-  message_count: 3657
+    nanoseconds_since_epoch: 1755446436958207509
+  message_count: 3006
   topics_with_message_count:
     - topic_metadata:
         name: /joint/command
@@ -50,7 +50,7 @@ rosbag2_bagfile_information:
               nsec: 854775807
             avoid_ros_namespace_conventions: false
         type_description_hash: RIHS01_a13ee3a330e346c9d87b5aa18d24e11690752bd33a0350f11c5882bc9179260e
-      message_count: 3643
+      message_count: 2992
   compression_format: ""
   compression_mode: ""
   relative_file_paths:
@@ -58,9 +58,9 @@ rosbag2_bagfile_information:
   files:
     - path: bag_sim_wheel_0.mcap
       starting_time:
-        nanoseconds_since_epoch: 1755382690683190114
+        nanoseconds_since_epoch: 1755446436958207509
       duration:
-        nanoseconds: 38566480252
-      message_count: 3657
+        nanoseconds: 30639009759
+      message_count: 3006
   custom_data: ~
   ros_distro: kilted

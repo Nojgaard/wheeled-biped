@@ -62,6 +62,16 @@ class Application:
                 State.RUNNING if self._state == State.STOPPED else State.STOPPED
             )
 
+    def launch_headless(self):
+        """Launch the application in headless mode."""
+        while True:
+            step_start = time.time()
+            self._step()
+
+            time_until_next_step = self._timestep - (time.time() - step_start)
+            if time_until_next_step > 0:
+                time.sleep(time_until_next_step)
+
     def launch(self):
         physics: Physics = self._env.physics
 
