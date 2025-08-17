@@ -43,10 +43,10 @@ int main() {
     std::cout << "Device not initialized" << std::endl;
     return 1;
   }
-
+  sensor_msgs::msg::Imu msg;
   auto start = std::chrono::high_resolution_clock::now();
   while (true) {
-    auto msg = imu.read();
+    bool success = imu.try_read(msg);
     auto rpy = quat_to_euler(msg.orientation);
     //std::cout << "\rAccuracy: " << imu.accuracy() << " Orientation: " << rpy.x << " " << rpy.y << " " << rpy.z << std::flush;
     std::cout << "\r Orientation: " << msg.linear_acceleration.x << " " <<msg.linear_acceleration.y << " " <<msg.linear_acceleration.z << std::flush;

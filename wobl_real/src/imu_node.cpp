@@ -31,7 +31,7 @@ public:
     publisher_ = this->create_publisher<sensor_msgs::msg::Imu>(Topics::IMU, rclcpp::SensorDataQoS());
     diagnostic_pub_ = this->create_publisher<DiagnosticStatus>(Topics::IMU_STATUS, 10);
     publish_status();
-    timer_ = create_wall_timer(std::chrono::milliseconds(12), std::bind(&IMUNode::publish_imu_data, this));
+    timer_ = create_wall_timer(std::chrono::milliseconds(7), std::bind(&IMUNode::publish_imu_data, this));
   }
 
 private:
@@ -75,14 +75,16 @@ private:
   }
 
   void publish_imu_data() {
-    sensor_msgs::msg::Imu msg = imu_.read();
-    msg.header.stamp = this->now();
-    msg.header.frame_id = "imu_link";
-    publisher_->publish(msg);
-    debug_print_imu_data(msg);
+    bool success = imu_.try_read(imu_msg_);
+    if (!success)
+      return;
+    imu_msg_.header.stamp = this->now();
+    imu_msg_.header.frame_id = "imu_link";
+    publisher_->publish(imu_msg_);
   }
 
   IMU imu_;
+  sensor_msgs::msg::Imu imu_msg_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publisher_;
   rclcpp::Publisher<DiagnosticStatus>::SharedPtr diagnostic_pub_;
   rclcpp::TimerBase::SharedPtr timer_;

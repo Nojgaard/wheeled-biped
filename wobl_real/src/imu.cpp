@@ -40,9 +40,9 @@ void IMU::initialize() {
   // Setting value can be calculated as follows:
   // Value = (DMP running rate / ODR ) - 1
   // E.g. For a 5Hz ODR rate when DMP is running at 55Hz, value = (55/5) - 1 = 10.
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Quat9, 3) == ICM_20948_Stat_Ok);
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Accel, 3) == ICM_20948_Stat_Ok);
-  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 3) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Quat9, 2) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Accel, 2) == ICM_20948_Stat_Ok);
+  status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 2) == ICM_20948_Stat_Ok);
   // status_ &= (icm_.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, 1) == ICM_20948_Stat_Ok); // Set to the maximum
 
   status_ &= (icm_.enableFIFO() == ICM_20948_Stat_Ok);
@@ -83,10 +83,12 @@ double get_lsb_to_g(uint8_t dps) {
   }
 }
 
-const sensor_msgs::msg::Imu &IMU::read() {
+bool IMU::try_read(sensor_msgs::msg::Imu &data_imu) {
   icm_.readDMPdataFromFIFO(&data_dmp_);
+  bool has_data = false;
 
   while ((icm_.status == ICM_20948_Stat_Ok) || (icm_.status == ICM_20948_Stat_FIFOMoreDataAvail)) {
+    has_data = true;
     if ((data_dmp_.header & DMP_header_bitmap_Quat9) >
         0) // We have asked for orientation data so we should receive Quat9
     {
@@ -96,29 +98,29 @@ const sensor_msgs::msg::Imu &IMU::read() {
       double q3 = ((double)data_dmp_.Quat9.Data.Q3) / 1073741824.0; // Convert to double. Divide by 2^30
       double q0 = std::sqrt(1.0 - ((q1 * q1) + (q2 * q2) + (q3 * q3)));
       accuracy_ = (double)data_dmp_.Quat9.Data.Accuracy;
-      data_imu_.orientation.x = q1;
-      data_imu_.orientation.y = q2;
-      data_imu_.orientation.z = q3;
-      data_imu_.orientation.w = q0;
+      data_imu.orientation.x = q1;
+      data_imu.orientation.y = q2;
+      data_imu.orientation.z = q3;
+      data_imu.orientation.w = q0;
     }
     if ((data_dmp_.header & DMP_header_bitmap_Accel) > 0) {
       double lsb2g = get_lsb_to_g(gpm4);
       double gravity = 9.80665;
-      data_imu_.linear_acceleration.x = data_dmp_.Raw_Accel.Data.X * lsb2g * gravity;
-      data_imu_.linear_acceleration.y = data_dmp_.Raw_Accel.Data.Y * lsb2g * gravity;
-      data_imu_.linear_acceleration.z = data_dmp_.Raw_Accel.Data.Z * lsb2g * gravity;
+      data_imu.linear_acceleration.x = data_dmp_.Raw_Accel.Data.X * lsb2g * gravity;
+      data_imu.linear_acceleration.y = data_dmp_.Raw_Accel.Data.Y * lsb2g * gravity;
+      data_imu.linear_acceleration.z = data_dmp_.Raw_Accel.Data.Z * lsb2g * gravity;
     }
     if ((data_dmp_.header & DMP_header_bitmap_Gyro_Calibr) > 0) {
       double lsb2dps = get_lsb_to_dps(dps2000);
       double dps2rps = 0.0174532925;
       const auto &gd = data_dmp_.Raw_Gyro.Data;
-      data_imu_.angular_velocity.x = gd.X * lsb2dps * dps2rps;
-      data_imu_.angular_velocity.y = gd.Y * lsb2dps * dps2rps;
-      data_imu_.angular_velocity.z = gd.Z * lsb2dps * dps2rps;
+      data_imu.angular_velocity.x = gd.X * lsb2dps * dps2rps;
+      data_imu.angular_velocity.y = gd.Y * lsb2dps * dps2rps;
+      data_imu.angular_velocity.z = gd.Z * lsb2dps * dps2rps;
     }
     icm_.readDMPdataFromFIFO(&data_dmp_);
   }
-  return data_imu_;
+  return has_data;
 }
 
 bool IMU::status() const { return status_; }

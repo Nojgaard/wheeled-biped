@@ -10,7 +10,7 @@ class IMU {
 public:
   IMU();
   void initialize();
-  const sensor_msgs::msg::Imu &read();
+  bool try_read(sensor_msgs::msg::Imu &data_imu);
   geometry_msgs::msg::Vector3 bias_linear_acceleration();
   geometry_msgs::msg::Vector3 bias_angular_velocity();
   geometry_msgs::msg::Vector3 bias_compass();
@@ -23,7 +23,6 @@ private:
 
   bool status_;
   double accuracy_;
-  sensor_msgs::msg::Imu data_imu_;
   icm_20948_DMP_data_t data_dmp_;
   ICM_20948 icm_;
 };
