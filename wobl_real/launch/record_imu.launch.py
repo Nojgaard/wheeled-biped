@@ -17,7 +17,7 @@ def generate_launch_description():
     joint_command_pub = ExecuteProcess(
         cmd=[
             'ros2', 'topic', 'pub', '--once',
-            '/joint_command', 'wobl_msgs/msg/JointCommand',
+            Topics.JOINT_COMMAND, 'wobl_msgs/msg/JointCommand',
             '{position: [0.0, 0.0, 0.0, 0.0], velocity: [1.0, 1.0, 0.0, 0.0]}'
         ],
         output='screen'
