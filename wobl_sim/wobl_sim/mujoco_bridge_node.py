@@ -27,30 +27,33 @@ class MujocoBridgeNode(Node):
         super().__init__("mujoco_bridge")
 
         self.declare_parameter("eval_mode", False)
-
-        self._action = np.zeros(4)
-
-        self._robot = Robot()
-        self._task = BalanceTask(
-            self._robot,
-            self.get_parameter("eval_mode").get_parameter_value().bool_value,
-        )
-        self._control_timestep = 0.01
-        self._sim_time = 0.0
-        self._app = Application(self._task, self.update_sim)
-        self._thread = threading.Thread(target=self._app.launch, daemon=True)
-        self._thread.start()
+        self.declare_parameter("headless", False)
 
         self.subscriber = self.create_subscription(
             JointCommand, Topics.JOINT_COMMAND, self.command_callback, 1
         )
 
-        print(Topics.JOINT_COMMAND, Topics.JOINT_COMMAND_REMOTE)
-
         self._publish_imu_state = self.create_publisher(Imu, Topics.IMU, sensor_qos)
         self._publish_joint_state = self.create_publisher(
             JointState, Topics.JOINT_STATE, sensor_qos
         )
+
+        self._action = np.zeros(4)
+
+        is_eval = self.get_parameter("eval_mode").get_parameter_value().bool_value
+        is_headless = self.get_parameter("headless").get_parameter_value().bool_value
+
+        self._robot = Robot()
+        self._task = BalanceTask(
+            self._robot,
+            is_eval,
+        )
+        self._control_timestep = 0.01
+        self._sim_time = 0.0
+        self._app = Application(self._task, self.update_sim)
+        app_launch = self._app.launch_headless if is_headless else self._app.launch
+        self._thread = threading.Thread(target=app_launch, daemon=True)
+        self._thread.start()
 
     def sim_stamp(self) -> Time:
         """Get the current simulation time as a ROS Time message."""

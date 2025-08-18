@@ -23,7 +23,7 @@ def generate_launch_description():
         executable="mujoco_bridge_node",
         name="mujoco_bridge_node",
         output="screen",
-        parameters=[{"eval_mode": True}],
+        parameters=[{"eval_mode": True, "headless": True}],
     )
 
     # Start wheel_eval_node after a delay (after bridge_node is up)
