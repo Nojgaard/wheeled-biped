@@ -35,7 +35,7 @@ public:
   }
 
   JointCommand update(const JointState &joint_state, const Imu &imu, const rclcpp::Duration &dt) {
-    velocity_ = velocity_ * 0.9 + wheel_velocity(joint_state) * 0.1;
+    velocity_ = velocity_ * 0.8 + wheel_velocity(joint_state) * 0.2;
     auto pitch = extract_pitch(imu.orientation);
 
     double cmd_pitch = pid_velocity.compute_command(-velocity_, dt);
