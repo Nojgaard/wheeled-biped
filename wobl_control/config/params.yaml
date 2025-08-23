@@ -1,15 +1,14 @@
-pid_balance_controller:
+wobl_controller:
   ros__parameters:
-    # Kinematics parameters
-    wheel_radius: 0.08       # Wheel radius in meters
-    wheel_separation: 0.3    # Distance between wheels in meters
-    max_wheel_rps: 10.0      # Maximum wheel radians per second
-
-    # Control limits
-    max_pitch: 0.17          # Maximum allowed pitch angle in radians (≈10 degrees)
-
-    # Velocity to Pitch controller gains [kp, ki, kd]
-    vel2pitch_gains: [0.1, 0.1, 0.0]
-    
-    # Pitch to Velocity controller gains [kp, ki, kd]
-    pitch2vel_gains: [200.0, 0.0, 5.0]
+    max_pitch: 0.17
+    max_wheel_rps: 10.0
+    pitch2vel_gains:
+    - 4.381999969482422
+    - 0.0
+    - 0.22499999403953552
+    vel2pitch_gains:
+    - 0.25
+    - 0.12099999934434891
+    - 0.0
+    wheel_radius: 0.08
+    wheel_separation: 0.3

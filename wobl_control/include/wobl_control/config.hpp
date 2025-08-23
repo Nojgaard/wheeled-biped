@@ -74,6 +74,7 @@ public:
   // Handle parameter changes and return whether config was updated
   void handle_parameter_changes(const std::vector<rclcpp::Parameter> &parameters,
                                 rcl_interfaces::msg::SetParametersResult &result) {
+    
     for (const auto &param : parameters) {
       const std::string &name = param.get_name();
 
@@ -85,10 +86,22 @@ public:
           return;
         }
       }
+      
+      // Apply parameter changes directly to our config
+      if (name == "wheel_radius") {
+        config_.wheel_radius = param.as_double();
+      } else if (name == "wheel_separation") {
+        config_.wheel_separation = param.as_double();
+      } else if (name == "max_wheel_rps") {
+        config_.max_wheel_rps = param.as_double();
+      } else if (name == "max_pitch") {
+        config_.max_pitch = param.as_double();
+      } else if (name == "vel2pitch_gains") {
+        config_.vel2pitch_gains = PidGains(param.as_double_array());
+      } else if (name == "pitch2vel_gains") {
+        config_.pitch2vel_gains = PidGains(param.as_double_array());
+      }
     }
-
-    // Update config from parameters
-    update_config_from_parameters();
   }
 
 private:

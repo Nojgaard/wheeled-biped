@@ -3,7 +3,7 @@
 #include <wobl_control/wobl_state.hpp>
 
 WoblState::WoblState(const DiffDriveKinematics &kinematics)
-    : kinematics_(kinematics), linear_velocity_(0.8), angular_velocity_(0.8), pitch_(0.0), roll_(0.0), yaw_(0.0) {}
+    : kinematics_(kinematics), linear_velocity_(0.2), angular_velocity_(0.2), pitch_(0.0), roll_(0.0), yaw_(0.0) {}
 
 bool WoblState::ready() const { return imu_ != nullptr && joint_state_ != nullptr; }
 

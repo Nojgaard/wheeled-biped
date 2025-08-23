@@ -6,6 +6,7 @@
 #include <wobl_control/pid_balance_controller.hpp>
 #include <wobl_control/wobl_command.hpp>
 #include <wobl_control/wobl_state.hpp>
+#include <wobl_msgs/msg/controller_inputs.hpp>
 #include <wobl_msgs/msg/joint_command.hpp>
 #include <wobl_msgs/msg/topics.hpp>
 
@@ -13,6 +14,7 @@ using JointState = sensor_msgs::msg::JointState;
 using Imu = sensor_msgs::msg::Imu;
 using JointCommand = wobl_msgs::msg::JointCommand;
 using Topics = wobl_msgs::msg::Topics;
+using ControllerInputs = wobl_msgs::msg::ControllerInputs;
 
 class WoblControllerNode : public rclcpp::Node {
 public:
@@ -29,12 +31,13 @@ public:
                                                      [this](Imu::ConstSharedPtr msg) { wobl_state_->update(msg); });
 
     command_publisher_ = this->create_publisher<JointCommand>(Topics::JOINT_COMMAND, 1);
+    controller_inputs_publisher_ = this->create_publisher<ControllerInputs>(Topics::CONTROLLER_INPUTS, 10);
     last_time_ = this->now();
     timer_ = create_wall_timer(std::chrono::milliseconds(10), std::bind(&WoblControllerNode::update, this));
 
     // Add parameter callback to handle parameter changes
-    param_callback_handle_ =
-        add_on_set_parameters_callback(std::bind(&WoblControllerNode::parameters_callback, this, std::placeholders::_1));
+    param_callback_handle_ = add_on_set_parameters_callback(
+        std::bind(&WoblControllerNode::parameters_callback, this, std::placeholders::_1));
   }
 
 private:
@@ -110,7 +113,7 @@ private:
 
     rclcpp::Duration dt = current_time - last_time_;
     last_time_ = current_time;
-    if (dt.seconds() < 0)
+    if (dt.seconds() < 0 || dt.seconds() > 0.03)
       return;
 
     pid_controller_->update(wobl_state_->linear_velocity(), wobl_state_->pitch(), dt.seconds());
@@ -118,10 +121,25 @@ private:
     wobl_command_->angular_velocity = pid_controller_->cmd_angular_velocity();
 
     command_publisher_->publish(wobl_command_->to_joint_commands());
+
+    controller_inputs_.cmd_linear_vel = pid_controller_->cmd_linear_velocity();
+    controller_inputs_.cmd_angular_vel = pid_controller_->cmd_angular_velocity();
+    controller_inputs_.cmd_pitch = pid_controller_->cmd_pitch();
+    controller_inputs_.est_pitch = wobl_state_->pitch();
+    controller_inputs_.est_linear_vel = wobl_state_->linear_velocity();
+    controller_inputs_.est_angular_vel = wobl_state_->angular_velocity();
+
+    pid_controller_->vel2pitch_errors(controller_inputs_.vel2pitch_ep, controller_inputs_.vel2pitch_ei,
+                                      controller_inputs_.vel2pitch_ed);
+    pid_controller_->pitch2vel_errors(controller_inputs_.pitch2vel_ep, controller_inputs_.pitch2vel_ei,
+                                      controller_inputs_.pitch2vel_ed);
+
+    controller_inputs_publisher_->publish(controller_inputs_);
   }
 
   // Parameter handler
   ControllerParameterHandler params_;
+  ControllerInputs controller_inputs_;
 
   // Use smart pointers to enable proper initialization after construction
   std::unique_ptr<DiffDriveKinematics> kinematics_;
@@ -134,6 +152,7 @@ private:
   rclcpp::Subscription<JointState>::SharedPtr joint_state_subscriber_;
   rclcpp::Subscription<Imu>::SharedPtr imu_subscriber_;
   rclcpp::Publisher<JointCommand>::SharedPtr command_publisher_;
+  rclcpp::Publisher<ControllerInputs>::SharedPtr controller_inputs_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   // Parameter callback handle

@@ -33,3 +33,11 @@ double PidBalanceController::cmd_pitch() const { return cmd_pitch_; }
 double PidBalanceController::cmd_linear_velocity() const { return cmd_linear_velocity_; }
 
 double PidBalanceController::cmd_angular_velocity() const { return cmd_angular_velocity_; }
+
+void PidBalanceController::vel2pitch_errors(double& ep, double& ei, double& ed) {
+  pid_vel2pitch_.get_current_pid_errors(ep, ei, ed);
+}
+
+void PidBalanceController::pitch2vel_errors(double& ep, double& ei, double& ed) {
+  pid_pitch2vel_.get_current_pid_errors(ep, ei, ed);
+}

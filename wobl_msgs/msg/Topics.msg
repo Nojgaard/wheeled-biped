@@ -9,3 +9,6 @@ string JOINT_COMMAND_REMOTE = "/remote/joint/command"
 string JOINT_STATUS = "/joint/status"
 
 string BATTERY = "/battery/data"
+
+string CONTROLLER_INPUTS = "/controller/inputs"
+string CONTROLLER_INPUTS_REMOTE = "remote/controller/inputs"

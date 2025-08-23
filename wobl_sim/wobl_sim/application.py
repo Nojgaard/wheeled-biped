@@ -78,12 +78,17 @@ class Application:
         with mujoco.viewer.launch_passive(
             physics.model.ptr, physics.data.ptr, key_callback=self._key_callback
         ) as viewer:
+            sync_interval = 1.0 / 30  # 30 times per second
+            last_sync_time = time.monotonic()
             while viewer.is_running():
-                step_start = time.time()
+                step_start = time.monotonic()
                 self._step()
-                viewer.sync()
 
-                time_until_next_step = self._timestep - (time.time() - step_start)
+                if step_start - last_sync_time >= sync_interval:
+                    viewer.sync()
+                    last_sync_time = step_start
+
+                time_until_next_step = self._timestep - (time.monotonic() - step_start)
                 if time_until_next_step > 0:
                     time.sleep(time_until_next_step)
         self._env.close()

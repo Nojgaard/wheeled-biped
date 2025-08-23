@@ -16,6 +16,9 @@ public:
   double cmd_linear_velocity() const;
   double cmd_angular_velocity() const;
 
+  void vel2pitch_errors(double& ep, double& ei, double& ed);
+  void pitch2vel_errors(double& ep, double& ei, double& ed);
+
 private:
   control_toolbox::AntiWindupStrategy aws_;
   control_toolbox::Pid pid_vel2pitch_;

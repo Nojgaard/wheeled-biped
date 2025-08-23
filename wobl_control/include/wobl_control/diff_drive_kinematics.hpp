@@ -13,7 +13,7 @@ public:
   }
 
   std::pair<double, double> forward_kinematics(double left_wheel_velocity, double right_wheel_velocity) const {
-    double linear_velocity = (left_wheel_velocity + right_wheel_velocity) / 2.0;
+    double linear_velocity = wheel_radius_ * (left_wheel_velocity + right_wheel_velocity) / 2.0;
     double angular_velocity = (right_wheel_velocity - left_wheel_velocity) * wheel_radius_ / wheel_seperation_;
     return {linear_velocity, angular_velocity};
   }
