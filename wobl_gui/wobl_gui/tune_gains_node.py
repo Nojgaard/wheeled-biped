@@ -10,6 +10,8 @@ import yaml
 import os
 import sys
 from ament_index_python.packages import get_package_share_directory
+from wobl_msgs.msg import Topics
+from geometry_msgs.msg import Twist
 
 
 class TuneGainsNode(Node):
@@ -32,6 +34,9 @@ class TuneGainsNode(Node):
         # Store parameters, track changes
         self.params = {}
         self.changed_params = set()
+
+        # Velocity command publisher
+        self.vel_pub = self.create_publisher(Twist, Topics.VELOCITY_COMMAND, 10)
 
         # Load parameters from file and initialize services
         self._load_params_from_yaml()
@@ -200,17 +205,52 @@ class TuneGainsNode(Node):
                         width=width - 50,
                     )
 
+                # Velocity Command Tab
+                with dpg.tab(label="Velocity Command"):
+                    dpg.add_text("Send Velocity Commands (Twist)")
+                    dpg.add_separator()
+                    self.linear_vel_slider = dpg.add_slider_float(
+                        label="Linear Velocity (m/s)",
+                        default_value=0.0,
+                        min_value=-0.8,
+                        max_value=0.8,
+                        callback=lambda s, a: self._publish_twist(),
+                        width=width - 50,
+                    )
+                    self.angular_vel_slider = dpg.add_slider_float(
+                        label="Angular Velocity (rad/s)",
+                        default_value=0.0,
+                        min_value=-2.0,
+                        max_value=2.0,
+                        callback=lambda s, a: self._publish_twist(),
+                        width=width - 50,
+                    )
+
             # Buttons for save/reset
             with dpg.group(horizontal=True):
                 dpg.add_button(label="Save Configuration", callback=self._save_config)
                 dpg.add_button(
                     label="Reset to Defaults", callback=self._reset_to_defaults
                 )
+                # Status display1
+                dpg.add_separator()
+                self.status_text = dpg.add_text("Ready")
+                self.update_status_text = dpg.add_text("No updates pending")
 
-            # Status display
-            dpg.add_separator()
-            self.status_text = dpg.add_text("Ready")
-            self.update_status_text = dpg.add_text("No updates pending")
+    def _publish_twist(self):
+        """Publish a Twist message with values from sliders"""
+        try:
+            twist = Twist()
+            twist.linear.x = dpg.get_value(self.linear_vel_slider)
+            twist.angular.z = dpg.get_value(self.angular_vel_slider)
+            self.vel_pub.publish(twist)
+            dpg.set_value(
+                self.status_text,
+                f"Published Twist: linear={twist.linear.x:.2f}, angular={twist.angular.z:.2f}",
+            )
+        except Exception as e:
+            self.get_logger().error(f"Error publishing Twist: {e}")
+            dpg.set_value(self.status_text, f"Error publishing Twist: {e}")
 
     def _run_gui(self):
         """Run the GUI event loop"""
@@ -358,7 +398,23 @@ class TuneGainsNode(Node):
             # Force immediate update
             self._send_param_updates()
 
-            dpg.set_value(self.status_text, "Reset to default values")
+            # Set velocity sliders to zero
+            dpg.set_value(self.linear_vel_slider, 0.0)
+            dpg.set_value(self.angular_vel_slider, 0.0)
+
+            # Publish zero velocity Twist
+            try:
+                twist = Twist()
+                twist.linear.x = 0.0
+                twist.angular.z = 0.0
+                self.vel_pub.publish(twist)
+                dpg.set_value(
+                    self.status_text,
+                    "Reset to default values and published zero velocity",
+                )
+            except Exception as e:
+                self.get_logger().error(f"Error publishing zero Twist: {e}")
+                dpg.set_value(self.status_text, f"Error publishing zero Twist: {e}")
 
         except Exception as e:
             self.get_logger().error(f"Error resetting to defaults: {e}")

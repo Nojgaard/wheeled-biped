@@ -11,4 +11,6 @@ string JOINT_STATUS = "/joint/status"
 string BATTERY = "/battery/data"
 
 string CONTROLLER_INPUTS = "/controller/inputs"
-string CONTROLLER_INPUTS_REMOTE = "remote/controller/inputs"
+string CONTROLLER_INPUTS_REMOTE = "/remote/controller/inputs"
+
+string VELOCITY_COMMAND = "/user/velocity"

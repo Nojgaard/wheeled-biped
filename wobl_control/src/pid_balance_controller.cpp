@@ -26,6 +26,7 @@ void PidBalanceController::update(double linear_velocity, double pitch, double d
 
   cmd_pitch_ = pid_vel2pitch_.compute_command(target_linear_velocity_ - linear_velocity, dt);
   cmd_linear_velocity_ = pid_pitch2vel_.compute_command(pitch - cmd_pitch_ - pitch_offset_, dt);
+  cmd_angular_velocity_ = target_angular_velocity_;
 }
 
 double PidBalanceController::cmd_pitch() const { return cmd_pitch_; }

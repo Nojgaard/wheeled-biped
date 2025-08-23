@@ -1,3 +1,4 @@
+#include <geometry_msgs/msg/twist.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
@@ -15,6 +16,7 @@ using Imu = sensor_msgs::msg::Imu;
 using JointCommand = wobl_msgs::msg::JointCommand;
 using Topics = wobl_msgs::msg::Topics;
 using ControllerInputs = wobl_msgs::msg::ControllerInputs;
+using Twist = geometry_msgs::msg::Twist;
 
 class WoblControllerNode : public rclcpp::Node {
 public:
@@ -29,6 +31,10 @@ public:
 
     imu_subscriber_ = this->create_subscription<Imu>(Topics::IMU, rclcpp::SensorDataQoS(),
                                                      [this](Imu::ConstSharedPtr msg) { wobl_state_->update(msg); });
+    velocity_command_subscriber_ =
+        this->create_subscription<Twist>(Topics::VELOCITY_COMMAND, 10, [this](Twist::ConstSharedPtr msg) {
+          pid_controller_->set_target_velocities(msg->linear.x, msg->angular.z);
+        });
 
     command_publisher_ = this->create_publisher<JointCommand>(Topics::JOINT_COMMAND, 1);
     controller_inputs_publisher_ = this->create_publisher<ControllerInputs>(Topics::CONTROLLER_INPUTS, 10);
@@ -151,6 +157,7 @@ private:
 
   rclcpp::Subscription<JointState>::SharedPtr joint_state_subscriber_;
   rclcpp::Subscription<Imu>::SharedPtr imu_subscriber_;
+  rclcpp::Subscription<Twist>::SharedPtr velocity_command_subscriber_;
   rclcpp::Publisher<JointCommand>::SharedPtr command_publisher_;
   rclcpp::Publisher<ControllerInputs>::SharedPtr controller_inputs_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
