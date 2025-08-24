@@ -56,6 +56,12 @@ class RobotObservables(Observables):
         return observable.MJCFFeature(
             "sensordata", self._entity.mjcf_model.sensor.accelerometer
         )
+    
+    @composer.observable
+    def linear_velocity(self):
+        return observable.MJCFFeature(
+            "sensordata", self._entity.mjcf_model.sensor.velocimeter
+        )
 
     @composer.observable
     def orientation(self):

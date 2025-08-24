@@ -2,7 +2,7 @@ import mujoco
 import numpy as np
 
 # Load your model
-model = mujoco.MjModel.from_xml_path("wobl_description/mjcf/robot.xml")  # or MJCF path
+model = mujoco.MjModel.from_xml_path("wobl_sim/mjcf/robot.xml")  # or MJCF path
 data = mujoco.MjData(model)
 
 # Simulate a few steps (optional if you want to get a steady pose)

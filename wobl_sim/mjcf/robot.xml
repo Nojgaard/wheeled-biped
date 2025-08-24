@@ -117,11 +117,11 @@
         <position name="L_hip" joint="L_hip" kp="32" kv="5" ctrlrange="-0.20 0.65" />
         <position name="R_hip" joint="R_hip" kp="32" kv="5" ctrlrange="-0.20 0.65" />
 
-        <velocity joint="L_foot"
+        <velocity name="L_foot" joint="L_foot"
             ctrllimited="true" ctrlrange="-10 10"
             forcelimited="true" forcerange="-1.96 1.96"
             kv="1"/>
-        <velocity joint="R_foot"
+        <velocity name="R_foot" joint="R_foot"
             ctrllimited="true" ctrlrange="-10 10"
             forcelimited="true" forcerange="-1.96 1.96"
             kv="1"/>
