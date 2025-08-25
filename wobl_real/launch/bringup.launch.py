@@ -1,8 +1,15 @@
+import os
+from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    config_file = os.path.join(
+        get_package_share_directory('wobl_control'),
+        'config',
+        'params.yaml'
+    )
     return LaunchDescription(
         [
             Node(
@@ -19,9 +26,10 @@ def generate_launch_description():
             ),
             Node(
                 package="wobl_control",
-                executable="pid_balance_controller",
-                name="pid_balance_controller",
+                executable="wobl_controller",
+                name="wobl_controller",
                 output="screen",
-            ),
+                parameters=[config_file],
+            )
         ]
     )
