@@ -82,8 +82,9 @@ private:
     command_publisher_->publish(cmd_joints);
 
     controller_inputs_.cmd_linear_vel = lqr_controller_->cmd_velocity();
-    controller_inputs_.cmd_angular_vel = lqr_controller_->cmd_yaw_rate();
+    //controller_inputs_.cmd_angular_vel = lqr_controller_->cmd_yaw_rate();
     controller_inputs_.est_pitch = wobl_state_->pitch();
+    controller_inputs_.cmd_angular_vel = wobl_state_->pitch_rate();
     controller_inputs_.est_linear_vel = wobl_state_->linear_velocity();
     controller_inputs_.est_angular_vel = wobl_state_->yaw_rate();
 
