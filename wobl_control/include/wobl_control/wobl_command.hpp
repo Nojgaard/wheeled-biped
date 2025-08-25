@@ -8,7 +8,7 @@ public:
   const wobl_msgs::msg::JointCommand &to_joint_commands();
 
   double linear_velocity;
-  double angular_velocity;
+  double yaw_rate;
 
 private:
   const DiffDriveKinematics &kinematics_;

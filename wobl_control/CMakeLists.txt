@@ -27,11 +27,12 @@ set(WOBL_DEPS
 
 # Executable
 add_executable(wobl_controller
+  src/parameter_handler.cpp
   src/wobl_controller_node.cpp
   src/pid_balance_controller.cpp
+  src/lqr_controller.cpp
   src/wobl_state.cpp
   src/wobl_command.cpp
-  src/config.cpp
 )
 target_include_directories(wobl_controller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(wobl_controller PRIVATE ${WOBL_DEPS})

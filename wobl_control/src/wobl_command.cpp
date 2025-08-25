@@ -10,7 +10,7 @@ WoblCommand::WoblCommand(const DiffDriveKinematics &kinematics)
 }
 
 const wobl_msgs::msg::JointCommand &WoblCommand::to_joint_commands() {
-  auto [left_wheel_rps, right_wheel_rps] = kinematics_.inverse_kinematics(linear_velocity, angular_velocity);
+  auto [left_wheel_rps, right_wheel_rps] = kinematics_.inverse_kinematics(linear_velocity, yaw_rate);
   joint_command_.velocity[2] = left_wheel_rps;
   joint_command_.velocity[3] = right_wheel_rps;
   return joint_command_;

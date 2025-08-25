@@ -2,8 +2,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <wobl_control/config.hpp>
 #include <wobl_control/diff_drive_kinematics.hpp>
+#include <wobl_control/lqr_controller.hpp>
+#include <wobl_control/parameter_handler.hpp>
 #include <wobl_control/pid_balance_controller.hpp>
 #include <wobl_control/wobl_command.hpp>
 #include <wobl_control/wobl_state.hpp>
@@ -31,10 +32,8 @@ public:
 
     imu_subscriber_ = this->create_subscription<Imu>(Topics::IMU, rclcpp::SensorDataQoS(),
                                                      [this](Imu::ConstSharedPtr msg) { wobl_state_->update(msg); });
-    velocity_command_subscriber_ =
-        this->create_subscription<Twist>(Topics::VELOCITY_COMMAND, 10, [this](Twist::ConstSharedPtr msg) {
-          pid_controller_->set_target_velocities(msg->linear.x, msg->angular.z);
-        });
+    velocity_command_subscriber_ = this->create_subscription<Twist>(
+        Topics::VELOCITY_COMMAND, 10, [this](Twist::ConstSharedPtr msg) { wobl_state_->update(msg); });
 
     command_publisher_ = this->create_publisher<JointCommand>(Topics::JOINT_COMMAND, 1);
     controller_inputs_publisher_ = this->create_publisher<ControllerInputs>(Topics::CONTROLLER_INPUTS, 10);
@@ -43,66 +42,23 @@ public:
 
     // Add parameter callback to handle parameter changes
     param_callback_handle_ = add_on_set_parameters_callback(
-        std::bind(&WoblControllerNode::parameters_callback, this, std::placeholders::_1));
+        std::bind(&ParameterHandler::handle_parameter_changes, &params_, std::placeholders::_1));
   }
 
 private:
   void init_objects() {
     // Get current configuration
-    const auto &config = params_.get_config();
+    const auto &config = params_.config();
 
     // Construct objects with proper initialization
     kinematics_ =
         std::make_unique<DiffDriveKinematics>(config.wheel_radius, config.wheel_separation, config.max_wheel_rps);
-    wobl_state_ = std::make_unique<WoblState>(*kinematics_);
-    wobl_command_ = std::make_unique<WoblCommand>(*kinematics_);
-    pid_controller_ = std::make_unique<PidBalanceController>();
+    wobl_state_ = std::make_unique<WoblState>(config, *kinematics_);
+    lqr_controller_ = std::make_unique<LqrController>(*wobl_state_);
 
     RCLCPP_INFO(get_logger(),
                 "Initialized controller with wheel radius: %.2f, wheel separation: %.2f, max wheel rps: %.2f",
                 config.wheel_radius, config.wheel_separation, config.max_wheel_rps);
-
-    // Initialize controller with current parameters
-    update_controller_configuration();
-  }
-
-  void update_controller_configuration() {
-    if (!pid_controller_) {
-      RCLCPP_ERROR(get_logger(), "Cannot update configuration: PID controller not initialized");
-      return;
-    }
-
-    const auto &config = params_.get_config();
-    double max_velocity = kinematics_->max_linear_velocity();
-
-    // Update controller gains
-    pid_controller_->set_vel2pitch_gains(config.vel2pitch_gains.kp, config.vel2pitch_gains.ki,
-                                         config.vel2pitch_gains.kd, config.max_pitch);
-
-    pid_controller_->set_pitch2vel_gains(config.pitch2vel_gains.kp, config.pitch2vel_gains.ki,
-                                         config.pitch2vel_gains.kd, max_velocity);
-
-    // Log updated configuration
-    RCLCPP_INFO(get_logger(), "Updated controller configuration:");
-    RCLCPP_INFO(get_logger(), "Velocity to Pitch gains: kp=%.2f, ki=%.2f, kd=%.2f", config.vel2pitch_gains.kp,
-                config.vel2pitch_gains.ki, config.vel2pitch_gains.kd);
-    RCLCPP_INFO(get_logger(), "Pitch to Velocity gains: kp=%.2f, ki=%.2f, kd=%.2f", config.pitch2vel_gains.kp,
-                config.pitch2vel_gains.ki, config.pitch2vel_gains.kd);
-    RCLCPP_INFO(get_logger(), "Max velocity: %.2f, Max pitch: %.2f", max_velocity, config.max_pitch);
-  }
-
-  rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters) {
-    rcl_interfaces::msg::SetParametersResult result;
-    result.successful = true;
-    result.reason = "success";
-
-    // Let parameter handler process the changes
-    params_.handle_parameter_changes(parameters, result);
-
-    if (result.successful)
-      update_controller_configuration();
-
-    return result;
   }
 
   void update() {
@@ -122,36 +78,26 @@ private:
     if (dt.seconds() < 0 || dt.seconds() > 0.03)
       return;
 
-    pid_controller_->update(wobl_state_->linear_velocity(), wobl_state_->pitch(), dt.seconds());
-    wobl_command_->linear_velocity = pid_controller_->cmd_linear_velocity();
-    wobl_command_->angular_velocity = pid_controller_->cmd_angular_velocity();
+    const auto &cmd_joints = lqr_controller_->update(dt.seconds());
+    command_publisher_->publish(cmd_joints);
 
-    command_publisher_->publish(wobl_command_->to_joint_commands());
-
-    controller_inputs_.cmd_linear_vel = pid_controller_->cmd_linear_velocity();
-    controller_inputs_.cmd_angular_vel = pid_controller_->cmd_angular_velocity();
-    controller_inputs_.cmd_pitch = pid_controller_->cmd_pitch();
+    controller_inputs_.cmd_linear_vel = lqr_controller_->cmd_velocity();
+    controller_inputs_.cmd_angular_vel = lqr_controller_->cmd_yaw_rate();
     controller_inputs_.est_pitch = wobl_state_->pitch();
     controller_inputs_.est_linear_vel = wobl_state_->linear_velocity();
-    controller_inputs_.est_angular_vel = wobl_state_->angular_velocity();
-
-    pid_controller_->vel2pitch_errors(controller_inputs_.vel2pitch_ep, controller_inputs_.vel2pitch_ei,
-                                      controller_inputs_.vel2pitch_ed);
-    pid_controller_->pitch2vel_errors(controller_inputs_.pitch2vel_ep, controller_inputs_.pitch2vel_ei,
-                                      controller_inputs_.pitch2vel_ed);
+    controller_inputs_.est_angular_vel = wobl_state_->yaw_rate();
 
     controller_inputs_publisher_->publish(controller_inputs_);
   }
 
   // Parameter handler
-  ControllerParameterHandler params_;
+  ParameterHandler params_;
   ControllerInputs controller_inputs_;
 
   // Use smart pointers to enable proper initialization after construction
   std::unique_ptr<DiffDriveKinematics> kinematics_;
-  std::unique_ptr<WoblCommand> wobl_command_;
   std::unique_ptr<WoblState> wobl_state_;
-  std::unique_ptr<PidBalanceController> pid_controller_;
+  std::unique_ptr<LqrController> lqr_controller_;
 
   rclcpp::Time last_time_;
 

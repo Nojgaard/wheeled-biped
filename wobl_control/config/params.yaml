@@ -1,5 +1,6 @@
 wobl_controller:
   ros__parameters:
+    offset_pitch: 0.0313
     max_pitch: 0.17
     max_wheel_rps: 10.0
     pitch2vel_gains:
@@ -10,5 +11,10 @@ wobl_controller:
     - 0.22300000488758087
     - 0.10400000214576721
     - 0.0
-    wheel_radius: 0.08
+    lqr_K:
+      - -8.46767193 # pitch
+      - -1.17544046 # pitch rate
+      - 2.89736204  # velocity
+      - 1.41421356  # position (integral)
+    wheel_radius: 0.04
     wheel_separation: 0.3
