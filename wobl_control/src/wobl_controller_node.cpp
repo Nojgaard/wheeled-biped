@@ -38,6 +38,7 @@ public:
     command_publisher_ = this->create_publisher<JointCommand>(Topics::JOINT_COMMAND, 1);
     controller_inputs_publisher_ = this->create_publisher<ControllerInputs>(Topics::CONTROLLER_INPUTS, 10);
     last_time_ = this->now();
+    last_debug_time_ = this->now();
     timer_ = create_wall_timer(std::chrono::milliseconds(10), std::bind(&WoblControllerNode::update, this));
 
     // Add parameter callback to handle parameter changes
@@ -81,14 +82,18 @@ private:
     const auto &cmd_joints = lqr_controller_->update(dt.seconds());
     command_publisher_->publish(cmd_joints);
 
-    controller_inputs_.cmd_linear_vel = lqr_controller_->cmd_velocity();
-    //controller_inputs_.cmd_angular_vel = lqr_controller_->cmd_yaw_rate();
-    controller_inputs_.est_pitch = wobl_state_->pitch();
-    controller_inputs_.cmd_angular_vel = wobl_state_->pitch_rate();
-    controller_inputs_.est_linear_vel = wobl_state_->linear_velocity();
-    controller_inputs_.est_angular_vel = wobl_state_->yaw_rate();
+    if (current_time - last_debug_time_ > rclcpp::Duration::from_seconds(0.05)) {
+      // RCLCPP_INFO(get_logger(), "Controller Inputs: %s", controller_inputs_.to_string().c_str());
+      controller_inputs_.cmd_linear_vel = lqr_controller_->cmd_velocity();
+      // controller_inputs_.cmd_angular_vel = lqr_controller_->cmd_yaw_rate();
+      controller_inputs_.est_pitch = wobl_state_->pitch();
+      controller_inputs_.cmd_angular_vel = wobl_state_->pitch_rate();
+      controller_inputs_.est_linear_vel = wobl_state_->linear_velocity();
+      controller_inputs_.est_angular_vel = wobl_state_->yaw_rate();
 
-    controller_inputs_publisher_->publish(controller_inputs_);
+      controller_inputs_publisher_->publish(controller_inputs_);
+      last_debug_time_ = current_time;
+    }
   }
 
   // Parameter handler
@@ -100,7 +105,7 @@ private:
   std::unique_ptr<WoblState> wobl_state_;
   std::unique_ptr<LqrController> lqr_controller_;
 
-  rclcpp::Time last_time_;
+  rclcpp::Time last_time_, last_debug_time_;
 
   rclcpp::Subscription<JointState>::SharedPtr joint_state_subscriber_;
   rclcpp::Subscription<Imu>::SharedPtr imu_subscriber_;
