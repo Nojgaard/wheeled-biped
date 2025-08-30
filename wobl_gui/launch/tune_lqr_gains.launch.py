@@ -28,8 +28,8 @@ def generate_launch_description():
             ),
             Node(
                 package="wobl_gui",
-                executable="tune_gains_node",
-                name="tune_gains_node",
+                executable="tune_lqr_node",
+                name="tune_lqr_node",
                 output="screen",
             )
         ]

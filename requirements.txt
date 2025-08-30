@@ -3,3 +3,5 @@ numpy
 simple-pid
 dearpygui
 dm_control
+control
+pyyaml

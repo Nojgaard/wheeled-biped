@@ -68,6 +68,8 @@ public:
         config_.wheel_separation = param.as_double();
     }
 
+    RCLCPP_INFO(node_->get_logger(), "Parameters have been updated.");
+
     return result;
   }
 
