@@ -14,7 +14,7 @@ public:
 private:
   wobl_msgs::msg::JointCommand cmd_joints_;
   const WoblState &state_;
-  double cmd_velocity_;
-  double cmd_yaw_rate_;
-  double velocity_integral_;
+  double cmd_velocity_ = 0.0;
+  double cmd_yaw_rate_ = 0.0;
+  double velocity_integral_ = 0.0;
 };

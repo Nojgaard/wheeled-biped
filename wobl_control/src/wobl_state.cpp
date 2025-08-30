@@ -3,7 +3,7 @@
 #include <wobl_control/wobl_state.hpp>
 
 WoblState::WoblState(const WoblConfig &config, const DiffDriveKinematics &kinematics)
-    : config_(config), kinematics_(kinematics), linear_velocity_(0.1), yaw_rate_(0.2), pitch_rate_(0.05) {}
+    : config_(config), kinematics_(kinematics), linear_velocity_(0.001, 0.02), pitch_rate_(0.5), yaw_rate_(0.2) {}
 
 bool WoblState::ready() const { return imu_ != nullptr && joint_state_ != nullptr; }
 
@@ -23,7 +23,7 @@ void WoblState::update(sensor_msgs::msg::JointState::ConstSharedPtr joint_state)
     return;
 
   auto [linear_vel, angular_vel] = kinematics_.forward_kinematics(joint_state_->velocity[2], joint_state_->velocity[3]);
-  linear_velocity_.update(linear_vel);
+  linear_velocity_.predict_and_update(linear_vel);
   yaw_rate_.update(angular_vel);
 }
 
@@ -45,7 +45,7 @@ double WoblState::roll() const { return roll_; }
 
 double WoblState::yaw() const { return yaw_; }
 
-double WoblState::linear_velocity() const { return linear_velocity_.value(); }
+double WoblState::linear_velocity() const { return linear_velocity_.state(); }
 
 double WoblState::pitch_rate() const { return pitch_rate_.value(); }
 

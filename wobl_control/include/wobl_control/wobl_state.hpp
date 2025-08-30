@@ -6,6 +6,7 @@
 #include <wobl_msgs/msg/joint_command.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <wobl_control/wobl_config.hpp>
+#include <wobl_control/kalman_filter.hpp>
 
 class WoblState {
 public:
@@ -33,10 +34,11 @@ public:
 private:
   const WoblConfig &config_;
   const DiffDriveKinematics &kinematics_;
-  LinearFilter linear_velocity_, yaw_rate_;
+  KalmanFilter linear_velocity_;
   LinearFilter pitch_rate_;
-  double pitch_, roll_, yaw_;
-  double target_linear_velocity_, target_yaw_rate_;
+  LinearFilter yaw_rate_;
+  double pitch_ = 0.0, roll_ = 0.0, yaw_ = 0.0;
+  double target_linear_velocity_ = 0.0, target_yaw_rate_ = 0.0;
 
   sensor_msgs::msg::Imu::ConstSharedPtr imu_;
   sensor_msgs::msg::JointState::ConstSharedPtr joint_state_;
