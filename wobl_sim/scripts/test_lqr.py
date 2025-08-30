@@ -8,7 +8,7 @@ from scipy.spatial.transform import Rotation
 # K = np.array([[-323573.82487269, -1272.68254765, -239663.34361485],
 #                [-323573.82487269, -1272.68254765, -239663.34361485]])
 # K = np.array([-6.34656745e+00, -5.66288177e-01, -1.53675426e-17,  2.23606798e+00])
-K = np.array([-6.17048601, -0.62420939,  1.61091858,  0.81649658])
+K = np.array([-7.70647133, -0.87846039,  2.61800094,  1.41421356])
 filtered_vel = 0
 velocity_integral = 0.0
 filtered_pitch_rate = 0
@@ -46,6 +46,8 @@ def policy(timestep):
     )
     #print(integral_gain * velocity_integral, lqr_v)
     lqr_v = np.clip(-lqr_v / 0.04, -10, 10)
+    if np.abs(lqr_v) < 0.08:
+        lqr_v = 0
     return np.array([0, 0, lqr_v, lqr_v])
 
 

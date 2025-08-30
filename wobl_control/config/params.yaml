@@ -11,10 +11,10 @@ wobl_controller:
     - 0.22300000488758087
     - 0.10400000214576721
     - 0.0
-    lqr_K:
-      - -6.17048601 # pitch
-      - -0.62420939 # pitch rate
-      - 1.61091858  # velocity
-      - 0.81649658  # position (integral)
+    lqr_K: # -6.96610096 -0.77409491  2.1227282   1.11803399
+      - -6.96610096 # pitch
+      - -0.77409491 # pitch rate
+      - 2.1227282  # velocity
+      - 1.11803399  # position (integral)
     wheel_radius: 0.04
     wheel_separation: 0.3

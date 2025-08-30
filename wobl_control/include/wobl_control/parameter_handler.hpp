@@ -3,11 +3,15 @@
 #include "wobl_control/wobl_config.hpp"
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <stdexcept>
 
 class ParameterHandler {
 public:
   explicit ParameterHandler(rclcpp::Node *node) : node_(node) {
     declare_parameters();
+    if (!validate_required_parameters()) {
+      throw std::runtime_error("Failed to initialize ParameterHandler: Required parameters not found. Please ensure all parameters are loaded from a config file.");
+    }
     refresh_from_parameters();
   }
 
@@ -69,26 +73,49 @@ public:
 
 private:
   void declare_parameters() {
-    // Default configuration
-    WoblConfig defaults;
-    defaults.offset_pitch = 0.0;
-    defaults.max_pitch = 0.17;
-    defaults.max_wheel_rps = 10.0;
-    defaults.pitch2vel_gains = {200.0, 0.0, 5.0};
-    defaults.vel2pitch_gains = {0.1, 0.1, 0.0};
-    defaults.lqr_K = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // Default zeros for LQR gain matrix
-    defaults.wheel_radius = 0.04;
-    defaults.wheel_separation = 0.3;
+    // Declare parameters with explicit types but no default values - will fail if not provided from config
+    node_->declare_parameter("offset_pitch", rclcpp::ParameterType::PARAMETER_DOUBLE);
+    node_->declare_parameter("max_pitch", rclcpp::ParameterType::PARAMETER_DOUBLE);
+    node_->declare_parameter("max_wheel_rps", rclcpp::ParameterType::PARAMETER_DOUBLE);
+    node_->declare_parameter("pitch2vel_gains", rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY);
+    node_->declare_parameter("vel2pitch_gains", rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY);
+    node_->declare_parameter("lqr_K", rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY);
+    node_->declare_parameter("wheel_radius", rclcpp::ParameterType::PARAMETER_DOUBLE);
+    node_->declare_parameter("wheel_separation", rclcpp::ParameterType::PARAMETER_DOUBLE);
+  }
 
-    // Declare all parameters with defaults
-    node_->declare_parameter("offset_pitch", defaults.offset_pitch);
-    node_->declare_parameter("max_pitch", defaults.max_pitch);
-    node_->declare_parameter("max_wheel_rps", defaults.max_wheel_rps);
-    node_->declare_parameter("pitch2vel_gains", defaults.pitch2vel_gains);
-    node_->declare_parameter("vel2pitch_gains", defaults.vel2pitch_gains);
-    node_->declare_parameter("lqr_K", defaults.lqr_K);
-    node_->declare_parameter("wheel_radius", defaults.wheel_radius);
-    node_->declare_parameter("wheel_separation", defaults.wheel_separation);
+  bool validate_required_parameters() {
+    // Check if all required parameters are set
+    std::vector<std::string> required_params = {
+      "offset_pitch", "max_pitch", "max_wheel_rps", 
+      "pitch2vel_gains", "vel2pitch_gains", "lqr_K",
+      "wheel_radius", "wheel_separation"
+    };
+
+    for (const auto& param_name : required_params) {
+      if (!node_->has_parameter(param_name)) {
+        RCLCPP_ERROR(node_->get_logger(), "Required parameter '%s' not found", param_name.c_str());
+        return false;
+      }
+    }
+
+    // Validate array sizes
+    if (node_->get_parameter("pitch2vel_gains").as_double_array().size() != 3) {
+      RCLCPP_ERROR(node_->get_logger(), "Parameter 'pitch2vel_gains' must be an array of 3 values [kp, ki, kd]");
+      return false;
+    }
+
+    if (node_->get_parameter("vel2pitch_gains").as_double_array().size() != 3) {
+      RCLCPP_ERROR(node_->get_logger(), "Parameter 'vel2pitch_gains' must be an array of 3 values [kp, ki, kd]");
+      return false;
+    }
+
+    if (node_->get_parameter("lqr_K").as_double_array().size() != 4) {
+      RCLCPP_ERROR(node_->get_logger(), "Parameter 'lqr_K' must be an array of 4 values");
+      return false;
+    }
+
+    return true;
   }
 
   rclcpp::Node *node_;

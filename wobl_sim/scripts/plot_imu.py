@@ -76,10 +76,20 @@ def collect_msgs(name, mcap_path):
         msg.header.stamp = stamp_to_seconds(msg.header.stamp) - t0
     return msgs
 
+def linear_filter(velocities, alpha):
+    """Apply a simple linear filter to the velocity list."""
+    filtered = []
+    vel = velocities[0] if velocities else 0.0
+    for new_vel in velocities:
+        vel = alpha * vel + (1 - alpha) * new_vel
+        filtered.append(vel)
+    return filtered
 
 def msgs_to_df(msgs):
     # Converts messages to a pandas DataFrame for easier plotting
     data = []
+    last_time = None
+    last_pitch = None
     for name, topic, msg in msgs:
         stamp = msg.header.stamp
         acc = msg.linear_acceleration
@@ -94,6 +104,13 @@ def msgs_to_df(msgs):
             2.0 * (ori.w * ori.x + ori.y * ori.z),
             1.0 - 2.0 * (ori.x**2 + ori.y**2),
         )
+
+        pitch_rate_dt = 0
+        if last_time is not None:
+            pitch_rate_dt = (pitch - last_pitch) / (stamp - last_time)
+        last_time = stamp
+        last_pitch = pitch
+
         data.append({
             "time": stamp,
             "name": name,
@@ -106,6 +123,7 @@ def msgs_to_df(msgs):
             "gyro_z": gyro.z,
             "pitch": pitch,
             "roll": roll,
+            "pitch_rate_dt": pitch_rate_dt
         })
     return pd.DataFrame(data)
 
@@ -125,6 +143,20 @@ def plot_linear_acceleration(df, title):
 
 def plot_gyro(df, title):
     df_melt = df.melt(id_vars=["time", "name"], value_vars=["gyro_x", "gyro_y", "gyro_z"], var_name="axis", value_name="angular_velocity")
+    fig = px.line(
+        df_melt,
+        x="time",
+        y="angular_velocity",
+        color="axis",
+        line_dash="name",
+        labels={"time": "Time [s]", "angular_velocity": "Angular Velocity [rad/s]", "axis": "Axis"},
+        title=title,
+    )
+    #fig.update_traces(mode="lines+markers")
+    fig.show(renderer="browser", using="print")
+
+def plot_gyro_dt(df, title):
+    df_melt = df.melt(id_vars=["time", "name"], value_vars=["pitch", "pitch_rate", "gyro_y"], var_name="axis", value_name="angular_velocity")
     fig = px.line(
         df_melt,
         x="time",
@@ -158,7 +190,9 @@ if __name__ == "__main__":
     msgs = collect_msgs("real", real_mcap)
     msgs += collect_msgs("sim", sim_mcap)
     df = msgs_to_df(msgs)
+    df["pitch_rate"] = linear_filter(list(df["gyro_y"]), alpha=0.5)
 
-    plot_linear_acceleration(df, "Real IMU Linear Acceleration")
-    plot_gyro(df, "Real IMU Angular Velocity")
-    plot_attitude(df, "Real IMU Attitude (Pitch & Roll)")
+    #plot_linear_acceleration(df, "Real IMU Linear Acceleration")
+    #plot_gyro(df, "Real IMU Angular Velocity")
+    plot_gyro_dt(df, "Real IMU Angular Velocity Rate of Change")
+    #plot_attitude(df, "Real IMU Attitude (Pitch & Roll)")

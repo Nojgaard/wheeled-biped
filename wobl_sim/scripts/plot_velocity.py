@@ -4,6 +4,8 @@ from wobl_msgs.msg import Topics
 import rosbag2_py
 from rclpy.serialization import deserialize_message
 from rosidl_runtime_py.utilities import get_message
+from filterpy.kalman import KalmanFilter
+import numpy as np
 
 
 import webbrowser
@@ -87,13 +89,32 @@ def linear_filter(velocities, alpha):
         filtered.append(vel)
     return filtered
 
+def kalman_filter(velocities, process_variance, measurement_variance):
+    """Apply a Kalman filter to the velocity list."""
+    filtered = []
+    kf = KalmanFilter(dim_x=1, dim_z=1)
+    kf.x = np.array([[0]])  # initial state (position and velocity)
+    kf.P = np.eye(1)  # initial uncertainty
+    kf.F = np.array([[1]])  # state transition matrix
+    kf.H = np.array([[1]])  # measurement matrix
+    kf.R = np.array([[measurement_variance]])  # measurement noise
+    kf.Q = np.array([[process_variance]])  # process noise
 
-def plot_velocity_comparison(msgs, title, alpha=0.7):
+    for z in velocities:
+        kf.predict()
+        kf.update(np.array([[z]]))
+        filtered.append(kf.x[0, 0])
+        print(filtered[-1], z)
+    return filtered
+
+def plot_velocity_comparison(msgs, title, alpha=0.8):
     msgs = [msg for msg in msgs if msg[1] == Topics.JOINT_STATE]
     names, topics, messages = zip(*msgs)
     stamps = [msg.header.stamp for msg in messages]
     velocities = [sum(msg.velocity[2:]) / 2.0 for msg in messages]
-    filtered_velocities = linear_filter(velocities, alpha)
+    #filtered_velocities = linear_filter(velocities, alpha)
+    filtered_velocities = kalman_filter(velocities, process_variance=0.001, measurement_variance=0.02)
+    #print(filtered_velocities)
 
     import pandas as pd
 
@@ -106,6 +127,8 @@ def plot_velocity_comparison(msgs, title, alpha=0.7):
             "Topic": topics,
         }
     )
+
+    print(df)
 
     dfm = df.melt(
         id_vars=["Time [s]", "Source", "Topic"],
