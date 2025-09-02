@@ -18,6 +18,7 @@ public:
     } else {
       RCLCPP_ERROR(this->get_logger(), "Failed to initialize IMU! Shutting down...");
       rclcpp::shutdown();
+      return;
     }
 
     auto bias_accel = imu_.bias_linear_acceleration();

@@ -21,8 +21,8 @@ public:
 private:
   void try_load_bias();
 
-  bool status_;
-  double accuracy_;
+  bool status_ = false;
+  double accuracy_ = 0.0;
   icm_20948_DMP_data_t data_dmp_;
   ICM_20948 icm_;
 };

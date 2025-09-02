@@ -88,9 +88,21 @@ double get_lsb_to_g(uint8_t dps) {
 }
 
 bool IMU::try_read(sensor_msgs::msg::Imu &data_imu) {
-  icm_.readDMPdataFromFIFO(&data_dmp_);
-  bool has_data = false;
+  if (!status_) {
+    return false;
+  }
 
+  icm_.readDMPdataFromFIFO(&data_dmp_);
+
+  ICM_20948_Status_e result = icm_.readDMPdataFromFIFO(&data_dmp_);
+  if (result != ICM_20948_Stat_Ok && result != ICM_20948_Stat_FIFOMoreDataAvail) {
+    // Hardware communication error
+    status_ = false;
+    return false;
+  }
+  
+
+  bool has_data = false;
   while ((icm_.status == ICM_20948_Stat_Ok) || (icm_.status == ICM_20948_Stat_FIFOMoreDataAvail)) {
     has_data = true;
     if ((data_dmp_.header & DMP_header_bitmap_Quat9) >
