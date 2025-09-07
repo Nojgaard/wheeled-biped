@@ -3,10 +3,10 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <vector>
-#include <wobl_real/servo_driver.hpp>
 #include <wobl_msgs/msg/battery_state.hpp>
 #include <wobl_msgs/msg/joint_command.hpp>
 #include <wobl_msgs/msg/topics.hpp>
+#include <wobl_real/servo_driver.hpp>
 
 using Topics = wobl_msgs::msg::Topics;
 using BatteryState = wobl_msgs::msg::BatteryState;
@@ -98,10 +98,17 @@ public:
     publish_state();
   }
 
+  
+  ~ServoNode() {
+    timer_.reset();       // Stop timer first
+    enable_servos(false); // Disable servos safely
+  }
+
 private:
   void write_commands() {
-    if (!cmd_next_ || !cmd_cur_) return;
-    
+    if (!cmd_next_ || !cmd_cur_)
+      return;
+
     for (size_t i = 0; i < servo_ids_.size(); ++i) {
       if (!has_pending_command(i)) {
         continue;
@@ -143,11 +150,6 @@ private:
     }
     servo_state_pub_->publish(state_msg);
   }
-
-  ~ServoNode() {
-    timer_.reset();  // Stop timer first
-    enable_servos(false);  // Disable servos safely
-}
 
   ServoDriver driver_;
   const std::vector<uint8_t> servo_ids_ = {HIP_LEFT, HIP_RIGHT, WHEEL_LEFT, WHEEL_RIGHT};
