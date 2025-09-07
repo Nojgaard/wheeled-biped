@@ -100,6 +100,8 @@ public:
 
 private:
   void write_commands() {
+    if (!cmd_next_ || !cmd_cur_) return;
+    
     for (size_t i = 0; i < servo_ids_.size(); ++i) {
       if (!has_pending_command(i)) {
         continue;
@@ -142,6 +144,11 @@ private:
     servo_state_pub_->publish(state_msg);
   }
 
+  ~ServoNode() {
+    timer_.reset();  // Stop timer first
+    enable_servos(false);  // Disable servos safely
+}
+
   ServoDriver driver_;
   const std::vector<uint8_t> servo_ids_ = {HIP_LEFT, HIP_RIGHT, WHEEL_LEFT, WHEEL_RIGHT};
   bool is_torque_enabled_;
@@ -162,7 +169,6 @@ int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<ServoNode>();
   rclcpp::spin(node);
-  node->enable_servos(false);
   rclcpp::shutdown();
   return 0;
 }

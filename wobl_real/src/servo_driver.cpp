@@ -2,9 +2,17 @@
 #include <iostream>
 #include <math.h>
 #include <wobl_real/servo_driver.hpp>
-bool ServoDriver::initialize() { return servo_.begin(baudrate_, port_.c_str()); }
+bool ServoDriver::initialize() {
+  is_initialized_ = servo_.begin(baudrate_, port_.c_str());
+  return is_initialized_;
+}
 
-ServoDriver::~ServoDriver() { servo_.end(); }
+ServoDriver::~ServoDriver() {
+  if (is_initialized_) {
+    servo_.end();
+    is_initialized_ = false;
+  }
+}
 
 bool ServoDriver::ping(u8 servo_id) { return servo_.Ping(servo_id) != -1; }
 

@@ -40,6 +40,7 @@ private:
 
   int baudrate_ = 1000000; // 1M baudrate
   std::string port_ = "/dev/ttyAMA0";
+  bool is_initialized_ = false;
 
   const int STEPS_PER_REVOLUTION_ = 4096;
   const int MAX_SPEED_ = 6800;
