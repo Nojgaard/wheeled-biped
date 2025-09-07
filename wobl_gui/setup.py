@@ -11,6 +11,8 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         ("share/" + package_name + "/launch", ["launch/tune_pid_gains.launch.py"]),
         ("share/" + package_name + "/launch", ["launch/tune_lqr_gains.launch.py"]),
+        ("share/" + package_name + "/launch", ["launch/joy_teleop.launch.py"]),
+        ("share/" + package_name + "/launch", ["launch/sim_joy_teleop.launch.py"]),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -21,7 +23,9 @@ setup(
     entry_points={
         "console_scripts": [
             "tune_gains_node = wobl_gui.tune_gains_node:main",
-            "tune_lqr_node = wobl_gui.tune_lqr:main"
+            "tune_lqr_node = wobl_gui.tune_lqr:main",
+            "joy2cmd_node = wobl_gui.joy2cmd:main",
+            "joy_bridge_wsl.py = wobl_gui.joy_bridge_wsl:main"
         ],
     },
 )

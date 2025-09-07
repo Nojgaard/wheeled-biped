@@ -37,6 +37,8 @@ private:
   KalmanFilter linear_velocity_;
   LinearFilter pitch_rate_;
   LinearFilter yaw_rate_;
+  LinearFilter target_linear_velocity_filter_;
+  LinearFilter target_yaw_rate_filter_;
   double pitch_ = 0.0, roll_ = 0.0, yaw_ = 0.0;
   double target_linear_velocity_ = 0.0, target_yaw_rate_ = 0.0;
 

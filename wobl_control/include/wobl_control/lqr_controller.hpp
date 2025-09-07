@@ -17,4 +17,5 @@ private:
   double cmd_velocity_ = 0.0;
   double cmd_yaw_rate_ = 0.0;
   double velocity_integral_ = 0.0;
+  double prev_target_velocity_ = 0.0;
 };

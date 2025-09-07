@@ -21,9 +21,15 @@ const wobl_msgs::msg::JointCommand &LqrController::update(double dt) {
   double pitch_rate_error = state_.pitch_rate();
   double vel_error = state_.target_linear_velocity() - state_.linear_velocity();
 
-  // velocity integral
+  // Reset integral if target velocity changed significantly (> 0.05 m/s)
+  if (std::abs(state_.target_linear_velocity() - prev_target_velocity_) > 0.05) {
+    velocity_integral_ = 0.0;
+  }
+  prev_target_velocity_ = state_.target_linear_velocity();
+
+  // velocity integral with anti-windup
   velocity_integral_ += vel_error * dt;
-  velocity_integral_ = std::clamp(velocity_integral_, -0.4, 0.4);
+  velocity_integral_ = std::clamp(velocity_integral_, -0.2, 0.2);
 
   cmd_velocity_ =
       -(k_pitch * pitch_error + k_pitch_rate * pitch_rate_error + k_vel * vel_error + k_pos * velocity_integral_);

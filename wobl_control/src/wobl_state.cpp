@@ -3,7 +3,8 @@
 #include <wobl_control/wobl_state.hpp>
 
 WoblState::WoblState(const WoblConfig &config, const DiffDriveKinematics &kinematics)
-    : config_(config), kinematics_(kinematics), linear_velocity_(0.001, 0.02), pitch_rate_(0.5), yaw_rate_(0.2) {}
+    : config_(config), kinematics_(kinematics), linear_velocity_(0.001, 0.02), pitch_rate_(0.5), yaw_rate_(0.2),
+      target_linear_velocity_filter_(0.1), target_yaw_rate_filter_(0.1) {}
 
 bool WoblState::ready() const { return imu_ != nullptr && joint_state_ != nullptr; }
 
@@ -31,8 +32,10 @@ void WoblState::update(geometry_msgs::msg::Twist::ConstSharedPtr cmd_vel) {
   if (cmd_vel == nullptr)
     return;
 
-  target_linear_velocity_ = cmd_vel->linear.x;
-  target_yaw_rate_ = cmd_vel->angular.z;
+  target_linear_velocity_filter_.update(cmd_vel->linear.x);
+  target_yaw_rate_filter_.update(cmd_vel->angular.z);
+  target_linear_velocity_ = target_linear_velocity_filter_.value();
+  target_yaw_rate_ = target_yaw_rate_filter_.value();
 }
 
 double WoblState::target_linear_velocity() const { return target_linear_velocity_; }
