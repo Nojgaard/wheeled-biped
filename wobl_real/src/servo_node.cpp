@@ -153,7 +153,7 @@ private:
 
   ServoDriver driver_;
   const std::vector<uint8_t> servo_ids_ = {HIP_LEFT, HIP_RIGHT, WHEEL_LEFT, WHEEL_RIGHT};
-  bool is_torque_enabled_;
+  bool is_torque_enabled_ = false;
 
   rclcpp::Time last_battery_pub_time_;
   JointCommand::SharedPtr cmd_next_;
