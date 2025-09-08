@@ -48,8 +48,8 @@ int main() {
   while (true) {
     bool success = imu.try_read(msg);
     auto rpy = quat_to_euler(msg.orientation);
-    //std::cout << "\rAccuracy: " << imu.accuracy() << " Orientation: " << rpy.x << " " << rpy.y << " " << rpy.z << std::flush;
-    std::cout << "\r Orientation: " << msg.linear_acceleration.x << " " <<msg.linear_acceleration.y << " " <<msg.linear_acceleration.z << std::flush;
+    std::cout << "\rAccuracy: " << imu.accuracy() << " Orientation: " << rpy.x << " " << rpy.y << " " << rpy.z << std::flush;
+    //std::cout << "\r Orientation: " << msg.linear_acceleration.x << " " <<msg.linear_acceleration.y << " " <<msg.linear_acceleration.z << std::flush;
     std::this_thread::sleep_for(std::chrono::milliseconds(12));
 
     auto now = std::chrono::high_resolution_clock::now();
